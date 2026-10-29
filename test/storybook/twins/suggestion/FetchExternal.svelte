@@ -35,6 +35,7 @@
     <Suggestion.Input type="search" oninput={handleInput} />
     <Suggestion.Toggle />
     <Suggestion.Clear />
+    <!-- No whitespace between the blocks: it would leave a space in the empty list, and show it. -->
     <Suggestion.List>
       {#if value}
         <Suggestion.Empty>
@@ -46,8 +47,7 @@
             </span>
           {/if}
         </Suggestion.Empty>
-      {/if}
-      {#each options ?? [] as option (option)}
+      {/if}{#each options ?? [] as option (option)}
         <Suggestion.Option>{option}</Suggestion.Option>
       {/each}
     </Suggestion.List>

@@ -29,9 +29,7 @@
 {/snippet}
 
 {#snippet Required()}
-  {#snippet label()}
-    Hvor bor du?
-    <Tag data-color="warning" style="margin-inline-start: var(--ds-size-2)">Må fylles ut</Tag>
-  {/snippet}
+  <!-- No space before the Tag: JSX leaves none, and it would show. -->
+  {#snippet label()}Hvor bor du?<Tag data-color="warning" style="margin-inline-start: var(--ds-size-2)">Må fylles ut</Tag>{/snippet}
   <Textfield {label} required />
 {/snippet}

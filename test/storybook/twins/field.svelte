@@ -52,10 +52,8 @@
 
 {#snippet Optional()}
   <Field>
-    <Label>
-      Hvor bor du?
-      <Tag data-color="info" style="margin-inline-start: var(--ds-size-2)">Valgfritt</Tag>
-    </Label>
+    <!-- No space before the Tag: JSX leaves none, and it would show. -->
+    <Label>Hvor bor du?<Tag data-color="info" style="margin-inline-start: var(--ds-size-2)">Valgfritt</Tag></Label>
     <Input />
   </Field>
 {/snippet}

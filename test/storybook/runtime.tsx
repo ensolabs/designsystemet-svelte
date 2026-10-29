@@ -1,13 +1,28 @@
 // A stand-in for Storybook's CSF factories (`definePreview`, `preview.meta`, `meta.story`), enough to render an
 // upstream story as a React element: args merged from meta and story, `render` (or the meta's component), and the
 // story's and meta's decorators. Storybook's own global decorator (customStylesDecorator) only lays the story out, so
-// it is left out, on both sides. Play functions don't run.
+// it is left out, on both sides. The story keeps its play function (or the meta's), for the browser tests to run.
 import { createContext, createElement, useContext, useState, type ComponentType, type ReactElement, type ReactNode } from 'react';
 
 type Args = Record<string, unknown>;
 type Context = { args: Args; parameters: Record<string, unknown>; globals: Record<string, unknown>; argTypes: Record<string, unknown> };
 type Decorator = (Story: ComponentType, context: Context) => ReactNode;
 type Render = (args: Args, context: Context) => ReactNode;
+/** What Storybook passes a play function (StoryContext), as far as a story without Storybook can have it. */
+export type PlayContext = Context & {
+  id: string;
+  name: string;
+  title: string;
+  canvasElement: HTMLElement;
+  canvas: unknown;
+  userEvent: unknown;
+  step: (label: string, play: () => unknown) => Promise<void>;
+  viewMode: 'story';
+  loaded: Record<string, unknown>;
+  abortSignal: AbortSignal;
+  context: PlayContext;
+};
+export type Play = (context: PlayContext) => unknown;
 type Annotations = {
   title?: string;
   component?: ComponentType<any>;
@@ -15,6 +30,7 @@ type Annotations = {
   parameters?: Record<string, unknown>;
   decorators?: Decorator | Decorator[];
   render?: Render;
+  play?: Play;
   [key: string]: unknown;
 };
 
@@ -29,6 +45,11 @@ export type Story = {
   extend: (more: Annotations) => Story;
   /** The story as a React element, as Storybook would render it without its global decorator. */
   element: () => ReactElement;
+  /** The args the story starts with: the meta's, then the story's. */
+  args: Args;
+  parameters: Record<string, unknown>;
+  /** The story's play function, or else the meta's, as Storybook picks it. */
+  play: Play | undefined;
 };
 
 export function isStory(value: unknown): value is Story {
@@ -42,6 +63,18 @@ export function useArgs() {
   return useContext(ArgsContext);
 }
 
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && Object.getPrototypeOf(value) === Object.prototype;
+
+/** Storybook's combineParameters: plain objects merge, deeply; anything else is replaced. */
+export function combineParameters(...all: (Record<string, unknown> | undefined)[]): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const parameters of all)
+    for (const [key, value] of Object.entries(parameters ?? {}))
+      out[key] = isPlainObject(value) && isPlainObject(out[key]) ? combineParameters(out[key], value) : value;
+  return out;
+}
+
 const list = (decorators: Decorator | Decorator[] | undefined) => (decorators ? [decorators].flat() : []);
 
 function story(meta: Annotations, input: Annotations | Render): Story {
@@ -49,7 +82,7 @@ function story(meta: Annotations, input: Annotations | Render): Story {
   const render = annotations.render ?? meta.render ?? ((args: Args) => createElement(meta.component!, args));
   // The story's decorators wrap the story first, then the meta's.
   const decorators = [...list(annotations.decorators), ...list(meta.decorators)];
-  const parameters = { ...meta.parameters, ...annotations.parameters };
+  const parameters = combineParameters(meta.parameters, annotations.parameters);
 
   function Root() {
     const [args, setArgs] = useState<Args>({ ...meta.args, ...annotations.args });
@@ -67,16 +100,25 @@ function story(meta: Annotations, input: Annotations | Render): Story {
     );
   }
 
-    const extend = (more: Annotations) =>
+  const extend = (more: Annotations) =>
     story(meta, {
       ...annotations,
       ...more,
       args: { ...annotations.args, ...more.args },
-      parameters: { ...annotations.parameters, ...more.parameters },
+      parameters: combineParameters(annotations.parameters, more.parameters),
       decorators: [...list(more.decorators), ...list(annotations.decorators)],
     });
 
-  return { [STORY]: true, title: meta.title ?? '', input: annotations, extend, element: () => <Root /> };
+  return {
+    [STORY]: true,
+    title: meta.title ?? '',
+    input: annotations,
+    extend,
+    element: () => <Root />,
+    args: { ...meta.args, ...annotations.args },
+    parameters,
+    play: annotations.play ?? meta.play,
+  };
 }
 
 export default {

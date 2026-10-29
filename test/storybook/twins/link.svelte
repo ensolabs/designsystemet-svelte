@@ -24,27 +24,26 @@
 
 <!-- The meta's `href` arg comes after the story's own, so it wins. -->
 {#snippet WithIcon()}
-  <Link href={designsystemetLink}>
-    <EnvelopeClosedIcon aria-hidden height="1.5rem" width="1.5rem" />
-    <span>Kontakt oss</span>
-  </Link>
+  <!-- No whitespace between the icons and the text: JSX leaves none, and inside the link it would show. -->
+  <Link href={designsystemetLink}
+    ><EnvelopeClosedIcon aria-hidden height="1.5rem" width="1.5rem" /><span>Kontakt oss</span></Link
+  >
 {/snippet}
 
 {#snippet WithIconRight()}
-  <Link href={designsystemetLink}>
-    <span>Kontakt oss</span>
-    <EnvelopeClosedIcon aria-hidden height="1.5rem" width="1.5rem" />
-  </Link>
+  <Link href={designsystemetLink}
+    ><span>Kontakt oss</span><EnvelopeClosedIcon aria-hidden height="1.5rem" width="1.5rem" /></Link
+  >
 {/snippet}
 
 {#snippet WithMultipleIcons()}
-  <Link href={designsystemetLink}>
-    <ComponentIcon aria-hidden height="1.5rem" width="1.5rem" />
-    <span>Komponenter og</span>
-    <BookIcon aria-hidden height="1.5rem" width="1.5rem" />
-    <span>dokumentasjon på designsystemet.no</span>
-    <ExternalLinkIcon aria-hidden height="1.5rem" width="1.5rem" />
-  </Link>
+  <Link href={designsystemetLink}
+    ><ComponentIcon aria-hidden height="1.5rem" width="1.5rem" /><span>Komponenter og</span><BookIcon
+      aria-hidden
+      height="1.5rem"
+      width="1.5rem"
+    /><span>dokumentasjon på designsystemet.no</span><ExternalLinkIcon aria-hidden height="1.5rem" width="1.5rem" /></Link
+  >
 {/snippet}
 
 {#snippet WithOnlyIcon()}

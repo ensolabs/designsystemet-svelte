@@ -4,7 +4,7 @@
 // test/storybook/skipped/<file>.json: { "<export name>": "<why>" }.
 import type { ReactElement } from 'react';
 import type { Snippet } from 'svelte';
-import { isStory, type Story } from './runtime';
+import { isStory, type Play, type Story } from './runtime';
 
 export type Case = {
   /** Storybook's id, as on storybook.designsystemet.no: komponenter-button--preview. */
@@ -14,6 +14,13 @@ export type Case = {
   react: () => ReactElement;
   svelte: Snippet | undefined;
   skip: string | undefined;
+  /** Storybook's title (Komponenter/Button) and the story's name as Storybook shows it (Colors Hover). */
+  title: string;
+  storyName: string;
+  args: Record<string, unknown>;
+  parameters: Record<string, unknown>;
+  /** The play function Storybook runs after rendering the story: the story's, or else the meta's. */
+  play: Play | undefined;
 };
 
 const stories = import.meta.glob<Record<string, unknown>>('../upstream/packages/react/**/*.stories.tsx', { eager: true });
@@ -27,7 +34,7 @@ const sanitize = (text: string) =>
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');
 /** Storybook's storyNameFromExport, then sanitize: ColorsHover → colors-hover. */
-const exportToId = (name: string) => sanitize(name.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/([A-Z])([A-Z][a-z])/g, '$1 $2'));
+const storyNameFromExport = (name: string) => name.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/([A-Z])([A-Z][a-z])/g, '$1 $2');
 
 export const cases: Case[] = Object.entries(stories).flatMap(([path, module]: [string, Record<string, unknown>]) => {
   const file = path.split('/').pop()!.replace(/\.stories\.tsx$/, '');
@@ -36,7 +43,7 @@ export const cases: Case[] = Object.entries(stories).flatMap(([path, module]: [s
     .filter(([name, value]) => name !== 'default' && isStory(value))
     .map(([name, value]) => {
       const story = value as Story;
-      const id = `${sanitize(story.title)}--${exportToId(name)}`;
+      const id = `${sanitize(story.title)}--${sanitize(storyNameFromExport(name))}`;
       return {
         id,
         file,
@@ -44,6 +51,11 @@ export const cases: Case[] = Object.entries(stories).flatMap(([path, module]: [s
         react: story.element,
         svelte: twin?.[name] as Snippet | undefined,
         skip: skipped[`./skipped/${file}.json`]?.[name],
+        title: story.title,
+        storyName: (story.input.name as string | undefined) ?? storyNameFromExport(name),
+        args: story.args,
+        parameters: story.parameters,
+        play: story.play,
       };
     });
 });

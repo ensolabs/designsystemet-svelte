@@ -1,5 +1,6 @@
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import react from '@vitejs/plugin-react';
+import { webdriverio } from '@vitest/browser-webdriverio';
 import { fileURLToPath } from 'node:url';
 import { configDefaults, defineConfig, type Plugin } from 'vitest/config';
 
@@ -28,9 +29,12 @@ function upstreamStories(): Plugin {
   };
 }
 
-// Two projects:
-//   dom  mounts Digdir's React components and ours in jsdom, in the browser builds, and compares the DOM they leave.
-//   ssr  renders both to HTML on the server (react-dom/server, svelte/server) and compares that.
+// Three projects:
+//   dom      mounts Digdir's React components and ours in jsdom, in the browser builds, and compares the DOM they leave.
+//   ssr      renders both to HTML on the server (react-dom/server, svelte/server) and compares that.
+//   browser  mounts both in headless Chrome (WebdriverIO), styled by @digdir/designsystemet-css and its default theme,
+//            runs Digdir's play functions on both, and compares DOM and layout. Chrome is the one WebdriverIO finds
+//            (or downloads), or the binary in CHROME_BIN.
 export default defineConfig({
   plugins: [upstreamStories(), react(), svelte()],
   test: {
@@ -42,13 +46,56 @@ export default defineConfig({
           name: 'dom',
           environment: 'jsdom',
           include: ['test/**/*.test.{ts,tsx}'],
-          exclude: [...configDefaults.exclude, 'test/**/*.ssr.test.{ts,tsx}', 'test/upstream/**'],
+          exclude: [...configDefaults.exclude, 'test/**/*.{ssr,browser}.test.{ts,tsx}', 'test/upstream/**'],
           setupFiles: ['test/setup.ts'],
         },
       },
       {
         extends: true,
         test: { name: 'ssr', environment: 'node', include: ['test/**/*.ssr.test.{ts,tsx}'] },
+      },
+      {
+        extends: true,
+        // Prebundled up front: found one by one while the stories load, they would be bundled again mid-run, and the
+        // page would end up with two copies of React.
+        optimizeDeps: {
+          include: [
+            'react',
+            'react/jsx-runtime',
+            'react/jsx-dev-runtime',
+            'react-dom',
+            'react-dom/client',
+            '@digdir/designsystemet-react',
+            '@digdir/designsystemet-web',
+            '@navikt/aksel-icons',
+            'react-dropzone',
+            '@testing-library/dom',
+            '@testing-library/user-event',
+            '@testing-library/jest-dom/matchers',
+          ],
+        },
+        test: {
+          name: 'browser',
+          include: ['test/**/*.browser.test.{ts,tsx}'],
+          setupFiles: ['test/browser-setup.ts'],
+          testTimeout: 60_000,
+          browser: {
+            enabled: true,
+            headless: true,
+            screenshotFailures: false,
+            viewport: { width: 1280, height: 800 },
+            provider: webdriverio({
+              capabilities: {
+                'goog:chromeOptions': {
+                  ...(process.env.CHROME_BIN && { binary: process.env.CHROME_BIN }),
+                  // GitHub's Ubuntu runners don't let Chrome set up its sandbox.
+                  ...(process.env.CI && { args: ['--no-sandbox'] }),
+                },
+              },
+            }),
+            instances: [{ browser: 'chrome' }],
+          },
+        },
       },
     ],
   },
