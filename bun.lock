@@ -6,6 +6,8 @@
       "name": "@ensolabs/designsystemet-svelte",
       "dependencies": {
         "@digdir/designsystemet-web": "1.23.0",
+        "@floating-ui/dom": "1.8.0",
+        "@tanstack/virtual-core": "3.19.8",
       },
       "devDependencies": {
         "@digdir/designsystemet-css": "1.23.0",

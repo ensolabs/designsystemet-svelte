@@ -30,6 +30,13 @@
     },
     "./package.json": "./package.json"
   },
+  "imports": {
+    "#combobox-text": {
+      "types": "./src/combobox/text.browser.ts",
+      "browser": "./src/combobox/text.browser.ts",
+      "default": "./src/combobox/text.server.ts"
+    }
+  },
   "files": [
     "src"
   ],
@@ -48,7 +55,9 @@
     "svelte": "^5.29.0"
   },
   "dependencies": {
-    "@digdir/designsystemet-web": "1.23.0"
+    "@digdir/designsystemet-web": "1.23.0",
+    "@floating-ui/dom": "1.8.0",
+    "@tanstack/virtual-core": "3.19.8"
   },
   "devDependencies": {
     "@digdir/designsystemet-css": "1.23.0",

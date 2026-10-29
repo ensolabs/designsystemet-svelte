@@ -14,6 +14,7 @@ export { default as Button } from './button/Button.svelte';
 export { Card, CardBlock } from './card';
 export { default as Checkbox } from './checkbox/Checkbox.svelte';
 export { Chip, ChipButton, ChipCheckbox, ChipRadio, ChipRemovable } from './chip';
+export { Combobox, ComboboxEmpty, ComboboxOption, type ComboboxItem, type ComboboxOptionProps } from './combobox';
 export { Details, DetailsContent, DetailsSummary } from './details';
 export { Dialog, DialogBlock, DialogTrigger, DialogTriggerContext } from './dialog';
 export { default as Divider } from './divider/Divider.svelte';

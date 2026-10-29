@@ -5,9 +5,6 @@ import { expect, test } from 'vitest';
 import * as Svelte from '../src';
 
 const NOT_PORTED: Record<string, string> = {
-  Combobox: 'deprecated upstream; use EXPERIMENTAL_Suggestion',
-  ComboboxEmpty: 'deprecated upstream',
-  ComboboxOption: 'deprecated upstream',
   RovingFocusRoot: 'unused by the 1.23.0 components; designsystemet-web handles arrow keys (focusgroup)',
   RovingFocusItem: 'unused by the 1.23.0 components',
   useCheckboxGroup: 'use bind:group',
