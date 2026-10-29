@@ -1,13 +1,14 @@
 // Combobox (deprecated upstream), React and Svelte side by side: the same steps on each, comparing the DOM after each
 // step (the Combobox and its list, which is portalled to the body), and the onValueChange calls.
 import { Combobox } from '@digdir/designsystemet-react';
-import { act, type ComponentProps, type ReactElement } from 'react';
+import { act, useState, type ChangeEvent, type ComponentProps, type ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { flushSync, mount, tick, unmount, type Component, type Snippet } from 'svelte';
 import { afterEach, describe, expect, test, vi } from 'vitest';
 import { canonical } from './parity';
 import Host from './Host.svelte';
 import ComboboxBound from './stories/combobox/ComboboxBound.svelte';
+import ComboboxControlled from './stories/combobox/ComboboxControlled.svelte';
 import { cases } from './storybook/cases';
 
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
@@ -269,6 +270,160 @@ describe('Combobox', { timeout: 60_000 }, () => {
 
   test('virtual: the Virtualized story', async () => {
     const svelte = await steps(() => mountStoryReact('Virtualized'), () => mountStorySvelte('Virtualized'), [clickInput, type('ber'), key('ArrowDown')]);
+    await svelte.destroy();
+  });
+});
+
+/** ComboboxControlled.svelte's twin: `value` from a parent that follows onValueChange or not, a button that adds an
+ * option between the others, and with `extra` a child that isn't an option. */
+function ReactControlled(props: {
+  value?: string[];
+  follow?: boolean;
+  extra?: boolean;
+  multiple?: boolean;
+  onValueChange?: (value: string[]) => void;
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+}) {
+  const [value, setValue] = useState(props.value);
+  const [places, setPlaces] = useState([
+    { name: 'Oslo', value: '0301' },
+    { name: 'Bergen', value: '4601' },
+    { name: 'Bodø', value: '1804' },
+  ]);
+  return (
+    <>
+      <button id="add" onClick={() => setPlaces([places[0], { name: 'Lillehammer', value: '3405' }, ...places.slice(1)])}>
+        Legg til
+      </button>
+      <Combobox
+        label="Kommune"
+        value={value}
+        multiple={props.multiple}
+        onChange={props.onChange}
+        onValueChange={(next) => {
+          props.onValueChange?.(next);
+          if (props.follow) setValue(next);
+        }}
+      >
+        <Combobox.Empty>Ingen treff</Combobox.Empty>
+        {places.map((place) => (
+          <Combobox.Option key={place.value} value={place.value}>
+            {place.name}
+          </Combobox.Option>
+        ))}
+        {props.extra && <p>Ekstra</p>}
+      </Combobox>
+    </>
+  );
+}
+
+describe('Combobox: controlled state and children, as React', { timeout: 60_000 }, () => {
+  const add = (root: HTMLElement) => click(root.querySelector('#add'));
+
+  test('uncontrolled: a selection is kept when the options change', async () => {
+    const onReact = vi.fn();
+    const onSvelte = vi.fn();
+    const svelte = await steps(
+      () => mountReact(<ReactControlled onValueChange={onReact} />),
+      () => mountSvelte(ComboboxControlled, { onValueChange: onSvelte }),
+      [clickInput, option('Bergen'), type('Be'), add, pressOutside],
+    );
+    expect(onSvelte.mock.calls).toEqual(onReact.mock.calls);
+    expect(onSvelte.mock.calls.at(-1)).toEqual([['4601']]);
+    expect(input(svelte.root).value).toBe('Be');
+    expect(svelte.output()).toBe(null);
+    await svelte.destroy();
+  });
+
+  test('value, not followed: a selection calls onValueChange and shows; value comes back when the options change', async () => {
+    const onReact = vi.fn();
+    const onSvelte = vi.fn();
+    const svelte = await steps(
+      () => mountReact(<ReactControlled value={['0301']} onValueChange={onReact} />),
+      () => mountSvelte(ComboboxControlled, { value: ['0301'], onValueChange: onSvelte }),
+      [clickInput, option('Bergen'), add, pressOutside],
+    );
+    expect(onSvelte.mock.calls).toEqual(onReact.mock.calls);
+    // In React too, the text set back to Oslo then selects Oslo, as typing it would.
+    expect(onSvelte.mock.calls).toContainEqual([['4601']]);
+    expect(onSvelte.mock.calls.at(-1)).toEqual([['0301']]);
+    expect(input(svelte.root).value).toBe('Oslo');
+    expect(svelte.output()).toEqual(['0301']);
+    await svelte.destroy();
+  });
+
+  test('value, multiple, not followed: as React', async () => {
+    const onReact = vi.fn();
+    const onSvelte = vi.fn();
+    const svelte = await steps(
+      () => mountReact(<ReactControlled multiple value={['0301']} onValueChange={onReact} />),
+      () => mountSvelte(ComboboxControlled, { multiple: true, value: ['0301'], onValueChange: onSvelte }),
+      [clickInput, option('Bergen'), chip('Oslo'), add, pressOutside],
+    );
+    expect(onSvelte.mock.calls).toEqual(onReact.mock.calls);
+    expect(svelte.output()).toEqual(['0301']);
+    await svelte.destroy();
+  });
+
+  test('value, with a parent that follows onValueChange: it changes', async () => {
+    const svelte = await steps(
+      () => mountReact(<ReactControlled value={['0301']} follow />),
+      () => mountSvelte(ComboboxControlled, { value: ['0301'], follow: true }),
+      [clickInput, option('Bergen'), add, pressOutside],
+    );
+    expect(svelte.output()).toEqual(['4601']);
+    expect(input(svelte.root).value).toBe('Bergen');
+    await svelte.destroy();
+  });
+
+  test('bind:value: changes, and updates the bound value (as React with a parent that follows)', async () => {
+    const onSvelte = vi.fn();
+    const svelte = await steps(
+      () => mountReact(<ReactControlled value={['0301']} follow />),
+      () => mountSvelte(ComboboxControlled, { value: ['0301'], bind: true, onValueChange: onSvelte }),
+      [clickInput, option('Bergen'), add, pressOutside],
+    );
+    expect(svelte.output()).toEqual(['4601']);
+    expect(onSvelte.mock.calls.at(-1)).toEqual([['4601']]);
+    await svelte.destroy();
+  });
+
+  test('an option added between others goes there: in the list and for the arrow keys', async () => {
+    const onReact = vi.fn();
+    const onSvelte = vi.fn();
+    const svelte = await steps(
+      () => mountReact(<ReactControlled onValueChange={onReact} />),
+      () => mountSvelte(ComboboxControlled, { onValueChange: onSvelte }),
+      [add, clickInput, key('ArrowDown'), key('Enter')],
+    );
+    expect(onSvelte.mock.calls).toEqual(onReact.mock.calls);
+    expect(onSvelte.mock.calls.at(-1)).toEqual([['3405']]);
+    await svelte.destroy();
+  });
+
+  test('a child that is not an option renders once, in the open list, before the options', async () => {
+    const svelte = await steps(
+      () => mountReact(<ReactControlled extra />),
+      () => mountSvelte(ComboboxControlled, { extra: true }),
+      [clickInput, type('B'), pressOutside],
+    );
+    expect(document.body.textContent!.split('Ekstra').length).toBe(1);
+    await svelte.destroy();
+  });
+
+  test('setting the text from code calls oninput, as React calls onChange', async () => {
+    // The text, and the type of the native event: `change` when the Combobox sets the text. (Typing gives React's
+    // onChange a synthetic event of type `change` and Svelte's oninput the native `input`.)
+    const event = (e: { type: string; nativeEvent?: Event; target: EventTarget | null }) => [(e.nativeEvent ?? e).type, (e.target as HTMLInputElement).value];
+    const onReact = vi.fn(event);
+    const onSvelte = vi.fn(event);
+    const svelte = await steps(
+      () => mountReact(<ReactControlled value={['0301']} follow onChange={onReact} />),
+      () => mountSvelte(ComboboxControlled, { value: ['0301'], follow: true, oninput: onSvelte }),
+      [clickInput, option('Bergen'), type('Bodø'), pressOutside],
+    );
+    expect(onSvelte.mock.results).toEqual(onReact.mock.results);
+    expect(onSvelte.mock.results.map((r) => r.value)).toContainEqual(['change', 'Bergen']);
     await svelte.destroy();
   });
 });

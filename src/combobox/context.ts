@@ -24,9 +24,14 @@ export type ComboboxOptionProps = Omit<HTMLButtonAttributes, 'value'> & {
 export type OptionEntry = {
   readonly key: string;
   readonly item: ComboboxItem;
-  /** The option's props, for the rows of a virtual list, which Combobox renders itself. */
+  /** The option's props: Combobox renders the option's button in its list itself, after the other children, as React
+   * renders `filteredOptionsChildren` after `restChildren`. */
   readonly props: ComboboxOptionProps;
   readonly children: Snippet | undefined;
+  /** Where the option is among the children (in the `collect` pass), so the options keep their order. */
+  readonly node: Node | undefined;
+  /** The button rendered for it, for the option's `bind:ref`. */
+  ref: HTMLButtonElement | undefined;
 };
 
 export type ComboboxContext = {
@@ -48,8 +53,9 @@ const KEY = Symbol('combobox');
 const MODE = Symbol('combobox-mode');
 
 /**
- * Combobox renders its children twice. `collect`: always, and nothing shows; the options register, as React reads its
- * children's props. `list`: in the open list, where Combobox.Option and Combobox.Empty render.
+ * Combobox renders its children twice. `collect`: always, apart from the page (on an element that isn't in the document,
+ * or on the server to HTML that is dropped); the options register, as React reads its children's props. `list`: in the
+ * open list, where Combobox.Empty and the other children render, and Combobox renders the options' buttons after them.
  */
 export type Mode = 'collect' | 'list';
 

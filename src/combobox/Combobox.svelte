@@ -1,13 +1,18 @@
 <!--
   Deprecated upstream; use EXPERIMENTAL_Suggestion. A text input with a list of Combobox.Option to choose from, and
-  Combobox.Empty for when none match. Bind `value` (the selected values; one at most without `multiple`), or start from
-  `initialValue`, and listen with `onValueChange`. `filter` decides which options match the typed text; `name` adds a
-  hidden `select` for forms; `virtual` renders only the visible options of a long list.
+  Combobox.Empty for when none match. `filter` decides which options match the typed text; `name` adds a hidden
+  `select` for forms; `virtual` renders only the visible options of a long list. As in React:
+  - Without `value`, the user selects; `initialValue` gives the values selected at first. A change calls
+    `onValueChange` with the selected values.
+  - With `value`, the selection (and without `multiple`, the text) is set from `value` when `value` or the options
+    change. A selection by the user calls `onValueChange` and shows, but `value` stays the parent's.
+  - With `bind:value`, Svelte's controlled form, a selection calls `onValueChange` and then updates the bound `value`.
 -->
 <script lang="ts">
   import { autoUpdate, computePosition, flip, offset, size as sizeMiddleware } from '@floating-ui/dom';
   import { Virtualizer, elementScroll, observeElementOffset, observeElementRect } from '@tanstack/virtual-core';
-  import { onDestroy, untrack, type Snippet } from 'svelte';
+  import { getAllContexts, onDestroy, untrack, type Snippet } from 'svelte';
+  import { renderApart } from '#combobox-text';
   import type { HTMLInputAttributes } from 'svelte/elements';
   import ChipRemovable from '../chip/ChipRemovable.svelte';
   import ContentView from '../content.svelte';
@@ -85,6 +90,8 @@
 
   let {
     value = $bindable(),
+    // The parent's `value` itself: after `value = …`, it has the new value only if the parent bound `value`.
+    value: parentValue,
     initialValue = [],
     onValueChange,
     label,
@@ -138,8 +145,8 @@
     if (typeof inputValueProp === 'string') inputValue = inputValueProp;
   });
 
-  // The options register themselves (in the `collect` pass), in order. A plain list and a version: on the server,
-  // nothing reads the options before they have all registered.
+  // The options register themselves (in the `collect` pass). A plain list and a version: on the server, nothing reads
+  // the options before they have all registered.
   const entries: OptionEntry[] = [];
   let version = $state(0);
   const register = (entry: OptionEntry) => {
@@ -151,20 +158,31 @@
     };
   };
 
-  /** useCombobox's `options`: by prefixed value, a later duplicate replacing the earlier one in its place. */
-  const options = $derived.by(() => {
+  /** The options in the order of the children, as React reads them: an option added between others goes there. */
+  const ordered = $derived.by(() => {
     void version;
+    // In the browser, by where their `template`s are in the collect pass; on the server, they register in order.
+    if (!entries.every((entry) => entry.node)) return [...entries];
+    return [...entries].sort((a, b) => (a.node!.compareDocumentPosition(b.node!) & 4 /* DOCUMENT_POSITION_FOLLOWING */ ? -1 : 1));
+  });
+
+  /** useCombobox's `options`: by prefixed value, a later duplicate replacing the earlier one in its place. The same
+   * object until an option changes (React's changes with its children, on every render of the parent). */
+  let previousOptions: Record<string, ComboboxItem> = {};
+  const sameItem = (a: ComboboxItem | undefined, b: ComboboxItem) =>
+    !!a && a.value === b.value && a.label === b.label && a.displayValue === b.displayValue && a.description === b.description;
+  const options = $derived.by(() => {
     const all: Record<string, ComboboxItem> = {};
-    for (const entry of entries) {
+    for (const entry of ordered) {
       if (entry.key in all) console.warn(`Combobox has multiple options with the same value: ${entry.item.value}`);
       all[entry.key] = entry.item;
     }
-    return all;
+    const keys = Object.keys(all);
+    const previousKeys = Object.keys(previousOptions);
+    const same = keys.length === previousKeys.length && keys.every((key, i) => key === previousKeys[i] && sameItem(previousOptions[key], all[key]));
+    return same ? previousOptions : (previousOptions = all);
   });
-  const entryByKey = $derived.by(() => {
-    void version;
-    return new Map(entries.map((entry) => [entry.key, entry]));
-  });
+  const entryByKey = $derived(new Map(ordered.map((entry) => [entry.key, entry])));
 
   const initialSelection = () =>
     (initialValue ?? []).map(prefix).reduce<Record<string, ComboboxItem>>((acc, key) => {
@@ -208,24 +226,28 @@
     if (previous !== text) handleInputChange(input, event);
   }
 
-  // `value` sets the selection, and without `multiple` the text.
+  // `value` sets the selection, and without `multiple` the text: as React's effects on `[multiple, value, options]`, when
+  // one of them changes.
+  let seen: { multiple: boolean; value: string[] | undefined; options: Record<string, ComboboxItem> } | undefined;
   $effect(() => {
-    if (value && value.length > 0 && !multiple) {
-      const option = options[prefix(value[0])];
-      untrack(() => setInputValueFromCode(option?.label || ''));
-    }
-  });
-  $effect(() => {
-    if (value) {
+    const changed = !seen || seen.multiple !== multiple || seen.value !== value || seen.options !== options;
+    seen = { multiple, value, options };
+    if (!changed || !value) return;
+    const current = value;
+    untrack(() => {
+      if (current.length > 0 && !multiple) setInputValueFromCode(options[prefix(current[0])]?.label || '');
       // React fails on a value without an option; here it is left out.
-      const updated = value.map((item) => options[prefix(item)]).filter(Boolean);
-      untrack(() => (selectedState = Object.fromEntries(updated.map((option) => [prefix(option.value), option]))));
-    }
+      const updated = current.map((item) => options[prefix(item)]).filter(Boolean);
+      selectedState = Object.fromEntries(updated.map((option) => [prefix(option.value), option]));
+    });
   });
 
   const emit = (values: string[]) => {
-    value = values;
     onValueChange?.(values);
+    // Updates a bound `value` (also one that starts out undefined). React's Combobox never sets `value`: one that isn't
+    // bound stays the parent's.
+    value = values;
+    if (parentValue !== value) value = parentValue;
   };
 
   type Snapshot = {
@@ -595,14 +617,28 @@
     },
   });
 
+  // The collect pass: the children rendered apart from the page, so the options register (Pass, context.ts). While
+  // hydrating (the id comes from the server), mounting elsewhere would break hydration: it starts once mounted.
+  const collectContexts = new Map(getAllContexts());
+  const collect = () =>
+    renderApart(
+      Pass,
+      {
+        mode: 'collect',
+        get children() {
+          return children;
+        },
+      },
+      collectContexts,
+    );
+  if (typeof window === 'undefined' || /^c\d+$/.test(uid)) onDestroy(collect());
+  else $effect(() => untrack(collect));
+
   const showClearButton = $derived(!hideClearButton && Object.keys(selectedOptions).length > 0);
   const selectedValues = $derived(Object.keys(selectedOptions).map(removePrefix));
   const ariaActiveDescendant = $derived(open ? activeId : undefined);
   const loadingId = `${uid}-loading`;
 </script>
-
-<!-- The options register; nothing shows. -->
-<Pass mode="collect">{@render children?.()}</Pass>
 
 <div bind:this={rootEl} class={['ds-combobox', `ds-combobox--${size}`, disabled && 'ds-combobox__disabled', className]} {style}>
   {#if name}
@@ -779,7 +815,7 @@
               }}
               data-index={row.index}
               style="position: absolute; top: 0px; left: 0px; width: 100%; transform: translateY({row.start}px);"
-            >{#if entry}<OptionButton {...entry.props} />{/if}</div
+            >{#if entry}<OptionButton {...entry.props} bind:ref={() => entry.ref, (node) => (entry.ref = node)} />{/if}</div
             >
           {/each}
         </div>
@@ -809,7 +845,14 @@
         ><Spinner aria-label="Laster" data-size="sm" />{loadingLabel}</div
         >
       {:else}
+        <!-- React's restChildren, then the options that pass the filter. -->
         <Pass mode="list">{@render children?.()}</Pass>
+        {#if !virtual}
+          {#each filteredOptions as key (key)}
+            {@const entry = entryByKey.get(key)}
+            {#if entry}<OptionButton {...entry.props} bind:ref={() => entry.ref, (node) => (entry.ref = node)} />{/if}
+          {/each}
+        {/if}
       {/if}
     </div>
     <button bind:this={endDismissEl} type="button" tabindex="-1" style={HIDDEN_STYLE} onclick={(event) => onOpenChange(false, event)}>Dismiss</button>

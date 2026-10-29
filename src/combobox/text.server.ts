@@ -1,5 +1,6 @@
-// The text a snippet renders, on the server: rendered to HTML on its own and read. See text.browser.ts.
-import type { Snippet } from 'svelte';
+// The text a snippet renders, on the server: rendered to HTML on its own and read. And Combobox's `collect` pass,
+// rendered to HTML that is dropped. See text.browser.ts.
+import type { Component, Snippet } from 'svelte';
 import { render } from 'svelte/server';
 import SnippetText from './SnippetText.svelte';
 
@@ -18,5 +19,13 @@ export function observeText(snippet: Snippet, update: (text: string) => void): (
           : (ENTITIES[name.toLowerCase()] ?? entity),
       ),
   );
+  return () => {};
+}
+
+/** Renders a component to HTML that is dropped, with the given contexts, for what it does while rendering. Its
+ * `onDestroy` callbacks run when that render ends. */
+export function renderApart<P extends Record<string, any>>(component: Component<P>, props: P, context: Map<any, any>): () => void {
+  // Rendered when its body is read.
+  void render(component as Component<any>, { props, context }).body;
   return () => {};
 }
