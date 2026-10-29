@@ -20,9 +20,10 @@ await $`git -c advice.detachedHead=false clone --quiet --depth 1 --branch ${tag}
 const commit = (await $`git -C ${tmp} rev-parse HEAD`.text()).trim();
 
 await rm(out, { recursive: true, force: true });
-// Combobox is deprecated upstream and not ported.
 const files = [
-  ...[...new Bun.Glob('packages/react/src/**/*.stories.tsx').scanSync(tmp)].filter((file) => !file.includes('/Combobox/')),
+  ...new Bun.Glob('packages/react/src/**/*.stories.tsx').scanSync(tmp),
+  // The data of the Combobox stories.
+  'packages/react/src/components/Combobox/data/data.ts',
   'packages/react/stories/constants.tsx',
   'designsystemet.config.json',
   'LICENSE',
