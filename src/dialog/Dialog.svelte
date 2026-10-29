@@ -1,7 +1,13 @@
 <!--
   A `<dialog>`, modal unless `modal={false}`, with a close button (`closeButton` is its label; `false` leaves it
-  out). Bind `open` to open and close it; it calls `onClose` when the user closes it. Or open it with a
-  Dialog.Trigger in a Dialog.TriggerContext, or a Button with `command="show-modal"` and `commandfor` its `id`.
+  out). Open it with a Dialog.Trigger in a Dialog.TriggerContext, or a Button with `command="show-modal"` and
+  `commandfor` its `id`, or with `open`. When the user closes it (close button, Escape, `closedby`), it calls
+  `onClose`. As in React:
+  - A change of `open` opens or closes it (`showModal()`, or `show()` with `modal={false}`, and `close()`, which
+    doesn't call `onClose`). Only a change: if the user closes it while `open` stays `true`, it stays closed until
+    the parent sets `open` to `false` and back to `true`.
+  - With `bind:open`, Svelte's controlled form, a close by the user calls `onClose` and then sets the bound `open` to
+    `false`.
   React's `asChild` isn't ported: there it always throws, as Slot gets both the close button and the children.
 -->
 <script lang="ts">
@@ -32,6 +38,8 @@
     onclose,
     onClose,
     open = $bindable(),
+    // The parent's `open` itself: after `open = …`, it has the new value only if the parent bound `open`.
+    open: parentOpen,
     placement = 'center',
     ref = $bindable(),
     ...rest
@@ -41,6 +49,8 @@
   const autoId = $props.id();
   const usedId = $derived(id ?? autoId);
   let skipClose = false;
+  // What the effect below last saw: as React's effect on `[open, modal]`, it acts only when one of them changes.
+  let seen: { open?: boolean; modal: boolean } | undefined;
 
   $effect(() => {
     context.current = ref ?? null;
@@ -48,7 +58,9 @@
 
   $effect(() => {
     const dialog = ref;
-    if (!dialog || open === undefined || open === dialog.open) return;
+    const changed = !seen || seen.open !== open || seen.modal !== modal;
+    seen = { open, modal };
+    if (!changed || !dialog || open === undefined || open === dialog.open) return;
     if (open) return dialog[modal ? 'showModal' : 'show']();
     skipClose = true;
     dialog.close();
@@ -61,7 +73,11 @@
     if (event.target !== event.currentTarget) return;
     if (!skipClose) {
       onClose?.(event);
-      if (open !== undefined) open = false;
+      // Updates a bound `open`; a parent's `open` that isn't bound stays as it is, as in React.
+      if (open !== undefined) {
+        open = false;
+        if (parentOpen !== false) open = parentOpen;
+      }
     }
     skipClose = false;
   };

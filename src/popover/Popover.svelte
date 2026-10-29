@@ -1,7 +1,10 @@
 <!--
   Content that floats next to its trigger: a Popover.Trigger in the same Popover.TriggerContext, or any button with
-  `popovertarget` set to its `id`. designsystemet-web places it. Bind `open` to control it; a click on the trigger
-  or outside, or Escape, sets it and calls `onOpen`/`onClose`.
+  `popovertarget` set to its `id`. designsystemet-web places it. A click on the trigger opens it and calls `onOpen`; a
+  click on the trigger or outside, or Escape, closes it and calls `onClose`. As in React:
+  - With `open`, it is controlled: those call `onOpen`/`onClose`, and it stays as `open` says unless the parent
+    changes `open`.
+  - With `bind:open`, Svelte's controlled form, they call `onOpen`/`onClose` and then update the bound `open`.
 -->
 <script lang="ts">
   import { untrack } from 'svelte';
@@ -30,6 +33,8 @@
     onClose,
     onOpen,
     open = $bindable(),
+    // The parent's `open` itself: after `open = …`, it has the new value only if the parent bound `open`.
+    open: parentOpen,
     variant,
     placement = 'top',
     autoPlacement: _autoPlacement = true,
@@ -53,9 +58,12 @@
 
   const setOpen = (value: boolean) => {
     internalOpen = value;
-    if (open !== undefined) open = value;
     if (value) onOpen?.();
     else onClose?.();
+    if (open === undefined) return;
+    open = value;
+    // Not bound (or the parent kept its value): stay at `open`, as React does.
+    if (parentOpen !== value) open = parentOpen;
   };
 
   $effect(() => {

@@ -52,6 +52,7 @@ if (!('open' in dialogProto)) {
 }
 
 document.addEventListener('click', (e) => {
+  if (e.defaultPrevented) return;
   const invoker = (e.target as Element).closest?.('[popovertarget]');
   const target = invoker && document.getElementById(invoker.getAttribute('popovertarget')!);
   if (target) (target as any).togglePopover();
