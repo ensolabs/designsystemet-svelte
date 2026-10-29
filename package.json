@@ -19,25 +19,24 @@
   },
   "type": "module",
   "sideEffects": [
-    "./dist/index.js"
+    "./src/index.ts"
   ],
-  "svelte": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "svelte": "./src/index.ts",
+  "types": "./src/index.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "svelte": "./dist/index.js"
+      "types": "./src/index.ts",
+      "svelte": "./src/index.ts"
     },
     "./package.json": "./package.json"
   },
   "files": [
-    "dist"
+    "src"
   ],
   "scripts": {
     "build": "svelte-package -i src -o dist",
     "typecheck": "svelte-check --tsconfig tsconfig.json --fail-on-warnings",
-    "test": "vitest run",
-    "prepare": "svelte-package -i src -o dist"
+    "test": "vitest run"
   },
   "publishConfig": {
     "access": "public"
