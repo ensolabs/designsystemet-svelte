@@ -8,16 +8,6 @@ const NOT_PORTED: Record<string, string> = {
   Combobox: 'deprecated upstream; use EXPERIMENTAL_Suggestion',
   ComboboxEmpty: 'deprecated upstream',
   ComboboxOption: 'deprecated upstream',
-  RovingFocusRoot: 'unused by the 1.23.0 components; designsystemet-web handles arrow keys (focusgroup)',
-  RovingFocusItem: 'unused by the 1.23.0 components',
-  useCheckboxGroup: 'use bind:group',
-  useRadioGroup: 'use bind:group',
-  usePagination: 'ported as pagination()',
-  useDebounceCallback: 'a React hook, deprecated upstream',
-  useIsomorphicLayoutEffect: 'a React hook, deprecated upstream',
-  useMediaQuery: 'a React hook, deprecated upstream',
-  useSynchronizedAnimation: 'ported as the synchronizedAnimation() attachment',
-  omit: 'a utility for React props',
 };
 
 test('every upstream component is exported', () => {

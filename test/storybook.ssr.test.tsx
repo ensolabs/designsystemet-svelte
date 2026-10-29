@@ -21,10 +21,14 @@ function parse(html: string): string {
   return canonical(document.body);
 }
 
-const ported = cases.filter((c) => !c.skip && c.svelte);
+const ported = cases.filter((c) => c.svelte);
 
 describe.each([...new Set(ported.map((c) => c.file))])('%s', (file) => {
   for (const c of ported.filter((c) => c.file === file)) {
+    if (c.skipSsr) {
+      test.skip(`${c.name} (${c.skipSsr})`, () => {});
+      continue;
+    }
     test(c.name, () => {
       const react = parse(renderToString(c.react()));
       const svelte = parse(render(Host, { props: { story: c.svelte! } }).body);

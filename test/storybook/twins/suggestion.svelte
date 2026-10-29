@@ -151,7 +151,7 @@
   {#snippet story()}
     <Field>
       <Label>Velg en destinasjon</Label>
-      <Suggestion selected="Sogndal">
+      <Suggestion defaultSelected="Sogndal">
         <Suggestion.Input />
         <Suggestion.Toggle />
         <Suggestion.Clear />

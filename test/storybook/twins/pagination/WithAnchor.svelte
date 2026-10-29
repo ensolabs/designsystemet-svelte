@@ -1,20 +1,27 @@
-<!-- The WithAnchor story: pagination() with links as page buttons, following the current page. -->
+<!-- The WithAnchor story: usePagination on the story's args, with links as page buttons. -->
 <script lang="ts">
-  import { Pagination, pagination, type PaginationOptions } from '../../../../src';
+  import { untrack } from 'svelte';
+  import { Pagination, usePagination, type UsePaginationProps } from '../../../../src';
 
-  let { currentPage = $bindable(), ...options }: PaginationOptions = $props();
+  let { args: initial }: { args: UsePaginationProps } = $props();
 
-  const p = $derived(pagination({ ...options, currentPage, setCurrentPage: (page) => (currentPage = page) }));
+  // The story's args in state, with updateArgs({ currentPage }) as setCurrentPage.
+  const args: UsePaginationProps = $state({
+    ...untrack(() => initial),
+    setCurrentPage: (currentPage: number) => (args.currentPage = currentPage),
+  });
+  const pagination = usePagination(args);
+  const { pages, nextButtonProps, prevButtonProps } = $derived(pagination);
 </script>
 
 <Pagination aria-label="Sidenavigering">
   <Pagination.List>
     <Pagination.Item>
-      <Pagination.Button aria-label="Forrige side" {...p.prevButtonProps}>
+      <Pagination.Button aria-label="Forrige side" {...prevButtonProps}>
         {#snippet child({ props })}<a href="#forrige-side" {...props}>Forrige</a>{/snippet}
       </Pagination.Button>
     </Pagination.Item>
-    {#each p.pages as { page, itemKey, buttonProps } (itemKey)}
+    {#each pages as { page, itemKey, buttonProps } (itemKey)}
       <Pagination.Item>
         {#if typeof page === 'number'}
           <Pagination.Button aria-label={`Side ${page}`} {...buttonProps}>
@@ -24,7 +31,7 @@
       </Pagination.Item>
     {/each}
     <Pagination.Item>
-      <Pagination.Button aria-label="Neste side" {...p.nextButtonProps}>
+      <Pagination.Button aria-label="Neste side" {...nextButtonProps}>
         {#snippet child({ props })}<a href="#neste-side" {...props}>Neste</a>{/snippet}
       </Pagination.Button>
     </Pagination.Item>

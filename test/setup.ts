@@ -67,3 +67,16 @@ document.addEventListener('keydown', (e) => {
 
 // jsdom has no Web Animations; the spinners only use it to keep in step.
 document.getAnimations ??= () => [];
+
+// jsdom has no matchMedia: a stand-in for a wide screen, where no media query matches, as useMediaQuery's story needs.
+window.matchMedia ??= (media: string) =>
+  ({
+    matches: false,
+    media,
+    onchange: null,
+    addListener() {},
+    removeListener() {},
+    addEventListener() {},
+    removeEventListener() {},
+    dispatchEvent: () => false,
+  }) as MediaQueryList;

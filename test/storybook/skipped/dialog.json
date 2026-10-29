@@ -1,3 +1,5 @@
 {
-  "DialogWithForm": "React gets a lower-case autofocus='true' (a @ts-expect-error workaround for React's autoFocus) and writes autofocus=\"true\"; in Svelte autofocus is a boolean attribute, always written autofocus=\"\". The twin is in twins/dialog.svelte; the rest of its markup matches."
+  "DialogWithForm": {
+    "ssr": "The story writes a lower-case autofocus='true' (a @ts-expect-error workaround for React's autoFocus), and the twin passes autofocus=\"true\" the same way. In the DOM it matches; on the server, svelte/server writes every attribute in a spread through attributes(), which writes autofocus, a boolean attribute in Svelte's list, as autofocus=\"\" whatever its value. The rest of the server markup matches."
+  }
 }

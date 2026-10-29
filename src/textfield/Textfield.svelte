@@ -26,7 +26,8 @@
     ref?: HTMLInputElement | HTMLTextAreaElement;
   };
   /** Input attributes; with `multiline`, they go on a textarea instead. */
-  type Props = Common & Omit<HTMLInputAttributes, 'prefix' | 'size'> & { multiline?: boolean; size?: number | null } & Pick<HTMLTextareaAttributes, 'rows' | 'cols' | 'wrap'>;
+  type Props = Common &
+    Omit<HTMLInputAttributes, 'prefix' | 'size' | 'autofocus'> & { multiline?: boolean; size?: number | null; autofocus?: boolean | string | null } & Pick<HTMLTextareaAttributes, 'rows' | 'cols' | 'wrap'>;
 
   let {
     label,

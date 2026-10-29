@@ -1,14 +1,16 @@
 <!--
   A text input that suggests values from a list: Suggestion.Input, Suggestion.List of Suggestion.Option, and optionally
-  Suggestion.Empty, Suggestion.Clear and Suggestion.Toggle, in designsystemet-web's `<ds-suggestion>`. Bind `selected`
-  (an item, or an array with `multiple`; a string stands for an item whose label is its value), or listen with
-  `onSelectedChange`. `filter` hides options that don't match the typed text; `creatable` lets the user add values;
-  `name` adds a hidden `select` for forms.
+  Suggestion.Empty, Suggestion.Clear and Suggestion.Toggle, in designsystemet-web's `<ds-suggestion>`. As in React,
+  `defaultSelected` starts it with items the user then changes, and `selected` controls it: a choice by the user calls
+  `onSelectedChange`, and the items stay `selected` until the parent changes it. `bind:selected` is Svelte's controlled
+  form: a choice updates the bound value. An item is `{ label, value }`, or an array of them with `multiple`; a string
+  stands for an item whose label is its value. `filter` hides options that don't match the typed text; `creatable` lets
+  the user add values; `name` adds a hidden `select` for forms.
 -->
 <script lang="ts">
   import { customElementAttributes } from '../utilities/custom-element';
   import type { DSSuggestionElement } from '@digdir/designsystemet-web';
-  import type { Snippet } from 'svelte';
+  import { untrack, type Snippet } from 'svelte';
   import type { HTMLAttributes } from 'svelte/elements';
   import type { DefaultProps } from '../types';
   import { setSuggestionContext } from './context';
@@ -32,15 +34,19 @@
     } & (
       | {
           multiple?: false;
-          /** The selected item. */
+          /** The selected item: controls the Suggestion. */
           selected?: Value | null;
+          /** The item selected at first, when `selected` isn't given. */
+          defaultSelected?: Value;
           onSelectedChange?: (value: SuggestionItem | null) => void;
         }
       | {
           /** Lets the user select several items. */
           multiple: true;
-          /** The selected items. */
+          /** The selected items: control the Suggestion. */
           selected?: Value[] | null;
+          /** The items selected at first, when `selected` isn't given. */
+          defaultSelected?: Value[];
           onSelectedChange?: (value: SuggestionItem[]) => void;
         }
     );
@@ -56,6 +62,9 @@
     onSelectedChange,
     renderSelected,
     selected = $bindable(),
+    // The parent's `selected` itself: after `selected = …`, it has the new value only if the parent bound `selected`.
+    selected: parentSelected,
+    defaultSelected,
     ref = $bindable(),
     ...rest
   }: Props = $props();
@@ -77,16 +86,24 @@
   };
   const defaultFilter: Filter = ({ label, input }) => label.toLowerCase().includes(input.value.trim().toLowerCase());
 
-  const selectedItems = $derived(selected ? sanitizeItems(selected) : []);
+  let defaultItems = $state(untrack(() => sanitizeItems(defaultSelected)));
+  const selectedItems = $derived(selected ? sanitizeItems(selected) : defaultItems);
 
   // The web component asks before it adds or removes an item: cancel, and change `selected` instead.
   $effect(() => {
     const combobox = ref;
     const beforeSelect = (event: Event) => {
       event.preventDefault();
+      const isControlled = selected !== undefined;
       const next = nextItems((event as CustomEvent<HTMLDataElement>).detail, selectedItems, combobox?.multiple ?? false);
       (onSelectedChange as ((value: SuggestionItem | SuggestionItem[] | null) => void) | undefined)?.(next || null);
+      // With bind:selected, the parent gets the new items. Otherwise `selected` stays the parent's, as in React.
       selected = next || null;
+      const bound = parentSelected === selected;
+      if (!bound) selected = parentSelected;
+      // Uncontrolled, the items change here, as React's default items do; bound, they follow too, for a `selected` of
+      // null after a clear.
+      if (!isControlled || bound) defaultItems = sanitizeItems(next);
     };
     combobox?.addEventListener('comboboxbeforeselect', beforeSelect);
     return () => combobox?.removeEventListener('comboboxbeforeselect', beforeSelect);
@@ -114,7 +131,12 @@
     }
   };
 
-  setSuggestionContext({ handleFilter });
+  // React's Suggestion gives a new context value on every render, so the list filters again: here, on a change of any
+  // of its props.
+  const render = () =>
+    void [children, className, creatable, defaultSelected, filter, multiple, name, onBeforeMatch, onSelectedChange, renderSelected, selectedItems, ...Object.values(rest)];
+
+  setSuggestionContext({ handleFilter, render });
 
   $effect(() => resetClearLabel(ref));
 </script>

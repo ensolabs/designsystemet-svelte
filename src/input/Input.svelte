@@ -2,12 +2,18 @@
   A native `input`. A read-only input ignores changes and clicks (so read-only checkboxes and radios can't be toggled).
   Bind `value`, `checked` (checkbox), `indeterminate` (checkbox) or `group` (checkbox or radio) as on a plain input.
   `indeterminate` is the DOM property only, never an attribute, so the markup stays React's (React sets it by ref).
+  `autofocus` is Svelte's boolean attribute; a string is written as it is, as React writes a lower-case `autofocus`
+  (`autofocus="true"`, which Digdir's DialogWithForm story uses so a Dialog focuses the input when it opens).
 -->
 <script lang="ts">
   import type { HTMLInputAttributes } from 'svelte/elements';
+  import { createAttachmentKey } from 'svelte/attachments';
   import type { DefaultProps } from '../types';
 
-  type Props = DefaultProps & Omit<HTMLInputAttributes, 'size'> & { size?: number | null; group?: unknown; ref?: HTMLInputElement };
+  const attachment = createAttachmentKey();
+
+  type Props = DefaultProps &
+    Omit<HTMLInputAttributes, 'size' | 'autofocus'> & { size?: number | null; group?: unknown; autofocus?: boolean | string | null; ref?: HTMLInputElement };
 
   let {
     type = 'text',
@@ -18,9 +24,18 @@
     indeterminate = $bindable(),
     onchange,
     onclick,
+    autofocus,
     ref = $bindable(),
-    ...rest
+    ...props
   }: Props = $props();
+
+  // Svelte's client sets the `autofocus` property, which writes `autofocus=""` whatever the value: a string is set as
+  // the attribute instead, by an attachment, and left out of the spread (the server writes it from there).
+  const rest = $derived(
+    typeof autofocus === 'string' && typeof window !== 'undefined'
+      ? { ...props, [attachment]: (el: HTMLInputElement) => el.setAttribute('autofocus', autofocus) }
+      : { ...props, autofocus: autofocus as boolean | null | undefined },
+  );
 
   const handleChange: HTMLInputAttributes['onchange'] = (event) => {
     if (!rest.readonly) onchange?.(event);

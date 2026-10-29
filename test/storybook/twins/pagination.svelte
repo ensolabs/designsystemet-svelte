@@ -22,7 +22,7 @@
 
 {#snippet WithAnchor()}
   <!-- onChange: open the console to see this event, as in the React story. -->
-  <PaginationWithAnchor currentPage={2} onChange={console.log} totalPages={10} showPages={7} />
+  <PaginationWithAnchor args={{ currentPage: 2, onChange: console.log, totalPages: 10, showPages: 7 }} />
 {/snippet}
 
 {#snippet Mobile()}

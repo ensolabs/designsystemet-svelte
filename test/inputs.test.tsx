@@ -20,7 +20,7 @@ import {
   SearchClear,
   SearchInput,
 } from '@digdir/designsystemet-react';
-import { act, type ComponentProps, type ReactElement } from 'react';
+import { act, useState, type ComponentProps, type ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';
 import { flushSync, mount, tick, unmount, type Component, type Snippet } from 'svelte';
 import { describe, expect, test, vi } from 'vitest';
@@ -28,6 +28,7 @@ import { both, canonical } from './parity';
 import * as S from './stories/inputs.svelte';
 import SearchBound from './stories/inputs/SearchBound.svelte';
 import SuggestionBound from './stories/inputs/SuggestionBound.svelte';
+import SuggestionRerender from './stories/inputs/SuggestionRerender.svelte';
 
 const Suggestion = EXPERIMENTAL_Suggestion;
 
@@ -375,6 +376,38 @@ describe('Suggestion', () => {
     await svelte.destroy();
   });
 
+  test('defaultSelected: starts with it, then the user decides', async () => {
+    const onReact = vi.fn();
+    const onSvelte = vi.fn();
+    const svelte = await steps(
+      () => mountReact(<ReactSuggestion defaultSelected="Oslo" onSelectedChange={onReact} />),
+      () => mountSvelte(SuggestionBound, { bind: false, defaultSelected: 'Oslo', onSelectedChange: onSvelte }),
+      [(root) => type(root, 'Bodø'), enter, (root) => click(root.querySelector('button[type=reset]')!)],
+    );
+    expect(onSvelte.mock.calls).toEqual(onReact.mock.calls);
+    expect(onSvelte.mock.calls).toEqual([[{ label: 'Bodø', value: '1804' }], [null]]);
+    expect(svelte.root.querySelector('data')).toBe(null);
+    await svelte.destroy();
+  });
+
+  for (const multiple of [false, true]) {
+    test(`selected${multiple ? ' (multiple)' : ''}, not bound: a choice calls onSelectedChange, and the items stay`, async () => {
+      const onReact = vi.fn();
+      const onSvelte = vi.fn();
+      const selected = multiple ? ['Oslo'] : 'Oslo';
+      const svelte = await steps(
+        () => mountReact(<ReactSuggestion multiple={multiple as false} selected={selected as string} onSelectedChange={onReact} />),
+        () => mountSvelte(SuggestionBound, { bind: false, multiple, selected, onSelectedChange: onSvelte }),
+        [(root) => type(root, 'Bodø'), enter, (root) => click(root.querySelector('button[type=reset]')!)],
+      );
+      expect(onSvelte.mock.calls).toEqual(onReact.mock.calls);
+      expect(onSvelte.mock.calls[0]).toEqual([multiple ? [{ label: 'Oslo', value: 'Oslo' }, { label: 'Bodø', value: '1804' }] : { label: 'Bodø', value: '1804' }]);
+      expect(svelte.root.querySelector('data')!.value).toBe('Oslo');
+      expect(svelte.output()).toEqual(selected);
+      await svelte.destroy();
+    });
+  }
+
   test('starts from `selected` and replaces it', async () => {
     const svelte = await steps(
       () => mountReact(<ReactSuggestion defaultSelected="Oslo" />),
@@ -425,6 +458,37 @@ describe('Suggestion', () => {
     expect(seen.length).toBeGreaterThan(0);
     expect(seen.slice(seen.length / 2)).toEqual(seen.slice(0, seen.length / 2));
     expect(seen.at(-1)).toBe('Oslo in DS-SUGGESTION');
+    await svelte.destroy();
+  });
+
+  test('re-filters when the Suggestion is rendered again, as React re-filters on every render of the list', async () => {
+    function Rerender() {
+      const [count, setCount] = useState(0);
+      return (
+        <>
+          <Suggestion data-count={count}>
+            <Suggestion.Input aria-label="Kommune" />
+            <Suggestion.List>
+              <Suggestion.Option value="0301">Oslo</Suggestion.Option>
+              <Suggestion.Option value="4601">Bergen</Suggestion.Option>
+              <Suggestion.Option value="1804">Bodø</Suggestion.Option>
+              <Suggestion.Empty>Ingen treff</Suggestion.Empty>
+            </Suggestion.List>
+          </Suggestion>
+          <button type="button" className="rerender" onClick={() => setCount(count + 1)}>
+            Oppdater
+          </button>
+        </>
+      );
+    }
+    // The input's value set by a script, without an input event: only a new render filters by it.
+    const setQuietly = (root: HTMLElement) => void (input(root).value = 'o');
+    const svelte = await steps(() => mountReact(<Rerender />), () => mountSvelte(SuggestionRerender, {}), [
+      (root) => type(root, 'b'),
+      setQuietly,
+      (root) => click(root.querySelector('.rerender')!),
+    ]);
+    expect(disabled(svelte.root)).toEqual([false, true, false]);
     await svelte.destroy();
   });
 
