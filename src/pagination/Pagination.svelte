@@ -4,6 +4,7 @@
   `pagination()`. Give it an `aria-label`.
 -->
 <script lang="ts">
+  import { customElementAttributes } from '../utilities/custom-element';
   import type { HTMLAttributes } from 'svelte/elements';
   import type { ChildSnippet, DefaultProps } from '../types';
 
@@ -24,5 +25,5 @@
 {#if child}
   {@render child({ props: attrs })}
 {:else}
-  <ds-pagination bind:this={ref} {...attrs}>{@render children?.()}</ds-pagination>
+  <ds-pagination bind:this={ref} {...customElementAttributes(attrs)}>{@render children?.()}</ds-pagination>
 {/if}

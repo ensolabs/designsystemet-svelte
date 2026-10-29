@@ -3,6 +3,7 @@
   controlled Tabs, a click asks Tabs to change `value` instead of switching by itself.
 -->
 <script lang="ts">
+  import { customElementAttributes } from '../utilities/custom-element';
   import type { HTMLAttributes } from 'svelte/elements';
   import { getTabsContext } from './context';
 
@@ -29,4 +30,4 @@
   });
 </script>
 
-<ds-tab bind:this={ref} {...attrs}>{@render children?.()}</ds-tab>
+<ds-tab bind:this={ref} {...customElementAttributes(attrs)}>{@render children?.()}</ds-tab>

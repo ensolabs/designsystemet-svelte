@@ -1,0 +1,3 @@
+{
+  "TestMediaQuery": "useMediaQuery is a React hook, deprecated upstream and not ported (Svelte has svelte/reactivity's MediaQuery)"
+}

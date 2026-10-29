@@ -4,6 +4,7 @@
   gets the new value either way.
 -->
 <script lang="ts">
+  import { customElementAttributes } from '../utilities/custom-element';
   import type { HTMLAttributes } from 'svelte/elements';
   import type { DefaultProps } from '../types';
   import { setTabsContext } from './context';
@@ -41,4 +42,4 @@
   const attrs = $derived({ class: ['ds-tabs', className], ...rest });
 </script>
 
-<ds-tabs bind:this={ref} {...attrs}>{@render children?.()}</ds-tabs>
+<ds-tabs bind:this={ref} {...customElementAttributes(attrs)}>{@render children?.()}</ds-tabs>

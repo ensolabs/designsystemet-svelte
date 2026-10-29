@@ -1,8 +1,8 @@
 <!-- Svelte twins of the stories in form.test.tsx: the same name, the same markup. -->
 <script module lang="ts">
-  import { Button, Field, Input, Label, Spinner, Textarea, Textfield, ValidationMessage } from '../../src';
+  import { Button, ErrorSummary, Field, Input, Label, Search, Spinner, Textarea, Textfield, ValidationMessage } from '../../src';
 
-  export { buttonPrimary, buttonVariants, buttonIcon, buttonLoading, buttonAsChild, spinner, field, textfield, textfieldFull, textfieldMultiline, inputReadOnly };
+  export { customElementTrue, buttonPrimary, buttonVariants, buttonIcon, buttonLoading, buttonAsChild, spinner, field, textfield, textfieldFull, textfieldMultiline, inputReadOnly };
 </script>
 
 {#snippet buttonPrimary()}<Button>Lagre</Button>{/snippet}
@@ -65,3 +65,9 @@
 {#snippet textfieldMultiline()}<Textfield label="Beskrivelse" multiline rows={4} counter={{ limit: 100, over: '%d for mye' }} />{/snippet}
 
 {#snippet inputReadOnly()}<Input type="checkbox" readonly checked /><Input type="radio" name="r" value="a" />{/snippet}
+
+{#snippet customElementTrue()}
+  <Field data-flag={true}><Label>Navn</Label><Input /></Field>
+  <Search data-flag={true}><Search.Input aria-label="Søk" /></Search>
+  <ErrorSummary data-flag={true}><ErrorSummary.Heading>Feil</ErrorSummary.Heading></ErrorSummary>
+{/snippet}

@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [typecheck, test, build]
+        check: [typecheck, test, build, 'check:version']
     steps:
       - name: Checkout
         uses: actions/checkout@v4

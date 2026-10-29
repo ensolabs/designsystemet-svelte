@@ -73,15 +73,25 @@ Each of these follows from a React idiom Svelte has no counterpart for. The mark
 - **`child` instead of `asChild`.** Your snippet renders the element, so the component can't put content into it. `Avatar` can't add the initials to your element; write them yourself. `Dialog` has no `child`, because React's `asChild` on Dialog always throws. `Chip.Checkbox` and `Chip.Radio` pass `{ props, input }`, and you render `{@render input()}` inside your element, where React uses Radix's `Slottable`. `Tooltip` passes its attributes to `child`, or wraps text children in `<span tabindex="0">` as React does with a string.
 - **Bindable state instead of controlled props.** `Details` with `open` updates `open` when the user toggles it, where React locks it to the prop. A `Radio` takes either `checked` or `bind:group`, not both. `Suggestion` folds `defaultSelected` into a bindable `selected`.
 - **Callbacks get values, not React's synthetic events.**
+- **`bind:indeterminate`** on a checkbox Input, where React needs a ref. It is the DOM property only, so the markup is React's.
+- **`autofocus` is always a boolean attribute** (`autofocus=""`), as Svelte writes it.
 - **Suggestion filtering.** React re-filters its list on every render. This port re-filters on mount, when `filter` changes, and when the options change (a `MutationObserver`).
 - **Upstream quirks are kept**, so the markup matches: for example, Breadcrumbs and Pagination items drop `class`, Popover.Trigger drops `id`, and Skeleton writes its unused `characters` prop as an attribute.
 
 ## How 1:1 is checked
 
-- `test/exports.test.ts`: every export of `@digdir/designsystemet-react` (113 names and 61 compound parts) is exported here under the same name, apart from a listed few with the reason (Combobox, the React hooks).
-- `test/*.test.tsx`: every story is mounted twice in jsdom, once with Digdir's React components and once with these, and the two DOMs must be equal after normalizing (attribute order, class order, and generated ids compared by which element they point at). Interaction tests cover what React implements itself: Suggestion, Dialog and Popover open state, Tabs, ToggleGroup, Search and `pagination()`.
+- **Digdir's own stories.** `test/upstream/` holds every story from Digdir's Storybook at the mirrored version, unchanged (`bun run vendor:stories` copies them). Each one is rendered with `@digdir/designsystemet-react`, and its Svelte twin in `test/storybook/twins/` must give the same result, in two ways:
+  - **in the DOM** (`test/storybook.test.tsx`): both mounted in jsdom, effects run, compared after normalizing attribute and class order, with generated ids compared by which element they point at;
+  - **on the server** (`test/storybook.ssr.test.tsx`): both rendered to HTML (react-dom/server and svelte/server) and compared the same way.
 
-Not yet checked: the stories are written for this port, not taken from Digdir's Storybook (the Elm port checks against every upstream story), and server rendering with hydration isn't compared. Both are planned.
+  A story without a twin fails the test unless it is listed in `test/storybook/skipped/<file>.json` with the reason. Storybook's play functions don't run, and its global layout decorator is left out on both sides.
+
+  At 1.23.0: 282 upstream stories (Combobox's aren't vendored, as Combobox isn't ported), 279 with a twin that matches on both counts, and 3 skipped: `DialogWithForm` (the React story writes `autofocus="true"` as a workaround; Svelte writes the boolean `autofocus=""`, and the rest matches), and the stories of the deprecated React hooks `useMediaQuery` and `useDebounceCallback`.
+- **Every export.** `test/exports.test.ts` checks that every export of `@digdir/designsystemet-react` (113 names and 61 compound parts) is exported here under the same name, apart from a listed few (Combobox, the React hooks).
+- **Interaction tests** (`test/*.test.tsx`) for what React implements itself: Suggestion, Dialog and Popover open state, Tabs, ToggleGroup, Search and `pagination()`.
+- **One version.** `bun run check:version` checks that `version`, every `@digdir/*` dependency and the vendored stories name the same upstream release.
+
+Not checked yet: a real browser. jsdom stands in for the browser's popover and modal dialog (`test/setup.ts`).
 
 ## Porting rules
 
@@ -99,11 +109,12 @@ For anyone adding or upgrading a component:
 ```sh
 bun install
 bun run typecheck   # svelte-check
-bun run test        # parity with @digdir/designsystemet-react, and interaction tests
+bun run test        # parity with @digdir/designsystemet-react (DOM and server), and interaction tests
+bun run check:version
 bun run build       # svelte-package → dist/
 ```
 
-To upgrade, bump every `@digdir/*` version and `version` together, run the tests, and port what upstream changed.
+To upgrade: bump `version` and every `@digdir/*` dependency together, run `bun run vendor:stories`, then `bun run test`. New and changed upstream stories fail until their twins (and the components) are updated.
 
 ## License
 

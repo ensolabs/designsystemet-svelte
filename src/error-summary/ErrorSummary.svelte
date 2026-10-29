@@ -4,6 +4,7 @@
   and labels it by its heading.
 -->
 <script lang="ts">
+  import { customElementAttributes } from '../utilities/custom-element';
   import type { DSErrorSummaryElement } from '@digdir/designsystemet-web';
   import type { HTMLAttributes } from 'svelte/elements';
   import type { ChildSnippet, DefaultProps } from '../types';
@@ -18,5 +19,5 @@
 {#if child}
   {@render child({ props: attrs })}
 {:else}
-  <ds-error-summary bind:this={ref} {...attrs}>{@render children?.()}</ds-error-summary>
+  <ds-error-summary bind:this={ref} {...customElementAttributes(attrs)}>{@render children?.()}</ds-error-summary>
 {/if}

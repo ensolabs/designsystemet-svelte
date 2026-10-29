@@ -16,7 +16,7 @@ const NOT_PORTED: Record<string, string> = {
   useDebounceCallback: 'a React hook, deprecated upstream',
   useIsomorphicLayoutEffect: 'a React hook, deprecated upstream',
   useMediaQuery: 'a React hook, deprecated upstream',
-  useSynchronizedAnimation: 'internal; the components use the synchronizedAnimation attachment',
+  useSynchronizedAnimation: 'ported as the synchronizedAnimation() attachment',
   omit: 'a utility for React props',
 };
 

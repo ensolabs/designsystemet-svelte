@@ -3,6 +3,7 @@
   Search.Clear when the input has text and empties the input when it is pressed.
 -->
 <script lang="ts">
+  import { customElementAttributes } from '../utilities/custom-element';
   import type { DSSuggestionElement } from '@digdir/designsystemet-web';
   import type { HTMLAttributes } from 'svelte/elements';
   import { resetClearLabel } from '../suggestion/sr-clear';
@@ -15,4 +16,4 @@
   $effect(() => resetClearLabel(ref));
 </script>
 
-<ds-suggestion bind:this={ref} class={['ds-search', className]} {...rest}>{@render children?.()}</ds-suggestion>
+<ds-suggestion bind:this={ref} class={['ds-search', className]} {...customElementAttributes(rest)}>{@render children?.()}</ds-suggestion>

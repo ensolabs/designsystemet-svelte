@@ -1,6 +1,7 @@
 <!--
   A native `input`. A read-only input ignores changes and clicks (so read-only checkboxes and radios can't be toggled).
-  Bind `value`, `checked` (checkbox) or `group` (checkbox or radio) as on a plain input.
+  Bind `value`, `checked` (checkbox), `indeterminate` (checkbox) or `group` (checkbox or radio) as on a plain input.
+  `indeterminate` is the DOM property only, never an attribute, so the markup stays React's (React sets it by ref).
 -->
 <script lang="ts">
   import type { HTMLInputAttributes } from 'svelte/elements';
@@ -14,6 +15,7 @@
     value = $bindable(),
     checked = $bindable(),
     group = $bindable(),
+    indeterminate = $bindable(),
     onchange,
     onclick,
     ref = $bindable(),
@@ -38,9 +40,9 @@
 </script>
 
 {#if type === 'checkbox' && group !== undefined}
-  <input bind:this={ref} class={['ds-input', className]} type="checkbox" {value} checked={(group as unknown[]).includes(value)} onchange={changeGroup} onclick={handleClick} {...rest} />
+  <input bind:this={ref} class={['ds-input', className]} type="checkbox" {value} checked={(group as unknown[]).includes(value)} bind:indeterminate onchange={changeGroup} onclick={handleClick} {...rest} />
 {:else if type === 'checkbox'}
-  <input bind:this={ref} class={['ds-input', className]} type="checkbox" {value} bind:checked onchange={handleChange} onclick={handleClick} {...rest} />
+  <input bind:this={ref} class={['ds-input', className]} type="checkbox" {value} bind:checked bind:indeterminate onchange={handleChange} onclick={handleClick} {...rest} />
 {:else if type === 'radio'}
   <input bind:this={ref} class={['ds-input', className]} type="radio" {value} checked={group === undefined ? checked : group === value} onchange={changeGroup} onclick={handleClick} {...rest} />
 {:else}

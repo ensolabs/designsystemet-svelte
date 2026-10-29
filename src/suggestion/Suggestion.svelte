@@ -6,6 +6,7 @@
   `name` adds a hidden `select` for forms.
 -->
 <script lang="ts">
+  import { customElementAttributes } from '../utilities/custom-element';
   import type { DSSuggestionElement } from '@digdir/designsystemet-web';
   import type { Snippet } from 'svelte';
   import type { HTMLAttributes } from 'svelte/elements';
@@ -118,11 +119,20 @@
   $effect(() => resetClearLabel(ref));
 </script>
 
-<!-- React renders `true` on a custom element as an empty attribute. -->
-<ds-suggestion bind:this={ref} data-multiple={multiple ? '' : undefined} data-creatable={creatable ? '' : undefined} class={['ds-suggestion', className]} {...rest}>
+<!-- React renders `true` on a custom element as an empty attribute. Svelte's client only focuses on `autofocus`, without
+     writing it, so the attachment writes it as React does (the server writes it from `rest`). -->
+<ds-suggestion
+  bind:this={ref}
+  data-multiple={multiple ? '' : undefined}
+  data-creatable={creatable ? '' : undefined}
+  class={['ds-suggestion', className]}
+  {...customElementAttributes(rest)}
+  {@attach (el) => el.toggleAttribute('autofocus', Boolean(rest.autofocus))}
+>
   {#each selectedItems as item (item.value)}
-    <!-- As an attribute: Svelte's `value` skips "", which the `data` already has as a property, and React writes. -->
-    <data {@attach (el) => el.setAttribute('value', item.value)}>{#if renderSelected}{@render renderSelected(item)}{:else}{item.label}{/if}</data>
+    <!-- `value` for the server; the attachment for "", which Svelte's client skips (the `data` already has it as a
+         property), and React writes. -->
+    <data value={item.value} {@attach (el) => el.setAttribute('value', item.value)}>{#if renderSelected}{@render renderSelected(item)}{:else}{item.label}{/if}</data>
   {/each}
   {@render children?.()}
   {#if name}<select {name} multiple hidden id={selectId}></select>{/if}

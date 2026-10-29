@@ -4,6 +4,7 @@
   picks which to show; give it an `aria-label`.
 -->
 <script lang="ts">
+  import { customElementAttributes } from '../utilities/custom-element';
   import type { HTMLAttributes } from 'svelte/elements';
   import type { DefaultProps } from '../types';
 
@@ -14,4 +15,4 @@
   const attrs = $derived({ class: ['ds-breadcrumbs', className], ...rest });
 </script>
 
-<ds-breadcrumbs bind:this={ref} {...attrs}>{@render children?.()}</ds-breadcrumbs>
+<ds-breadcrumbs bind:this={ref} {...customElementAttributes(attrs)}>{@render children?.()}</ds-breadcrumbs>

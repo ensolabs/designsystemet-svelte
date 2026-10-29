@@ -1,0 +1,3 @@
+{
+  "DialogWithForm": "React gets a lower-case autofocus='true' (a @ts-expect-error workaround for React's autoFocus) and writes autofocus=\"true\"; in Svelte autofocus is a boolean attribute, always written autofocus=\"\". The twin is in twins/dialog.svelte; the rest of its markup matches."
+}

@@ -1,5 +1,6 @@
 <!-- The content of one tab: designsystemet-web's `<ds-tabpanel>`, shown while the Tabs.Tab with the same `value` is selected. -->
 <script lang="ts">
+  import { customElementAttributes } from '../utilities/custom-element';
   import type { HTMLAttributes } from 'svelte/elements';
   import { getTabsContext } from './context';
 
@@ -12,4 +13,4 @@
   const attrs = $derived({ id: id ?? context.getPrefixedValue?.(value), ...rest });
 </script>
 
-<ds-tabpanel bind:this={ref} {...attrs}>{@render children?.()}</ds-tabpanel>
+<ds-tabpanel bind:this={ref} {...customElementAttributes(attrs)}>{@render children?.()}</ds-tabpanel>

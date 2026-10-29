@@ -57,4 +57,5 @@ export { default as Textfield } from './textfield/Textfield.svelte';
 export { ToggleGroup, ToggleGroupItem } from './toggle-group';
 export { default as Tooltip } from './tooltip/Tooltip.svelte';
 export { pagination, type PaginationButtonProps, type PaginationOptions } from './utilities/pagination';
+export { synchronizedAnimation } from './utilities/synchronized-animation';
 export { default as ValidationMessage } from './validation-message/ValidationMessage.svelte';

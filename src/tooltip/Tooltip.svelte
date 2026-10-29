@@ -9,6 +9,7 @@
   ```
 -->
 <script lang="ts">
+  import { createAttachmentKey } from 'svelte/attachments';
   import type { HTMLAttributes } from 'svelte/elements';
   import type { Placement } from '../popover/context';
   import type { ChildSnippet, DefaultProps } from '../types';
@@ -26,10 +27,17 @@
 
   let { content, placement = 'top', autoPlacement = true, open, child, children, ref = $bindable(), ...rest }: Props = $props();
 
+  // React's Slot points `ref` at your element: with `child`, an attachment in the props does that here.
+  const refKey = createAttachmentKey();
+  const attachRef = (el: HTMLElement) => {
+    ref = el;
+    return () => void (ref = undefined);
+  };
+
   const attrs = $derived({
     'data-tooltip': content,
     'data-placement': placement,
-    'data-autoplacement': `${autoPlacement}`,
+    'data-autoplacement': autoPlacement,
     ...rest,
     // React writes `open` as the boolean attribute it is on `<details>` and `<dialog>`.
     open: open ? '' : undefined,
@@ -37,7 +45,7 @@
 </script>
 
 {#if child}
-  {@render child({ props: attrs })}
+  {@render child({ props: { ...attrs, [refKey]: attachRef } })}
 {:else}
   <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
   <span bind:this={ref} {...attrs} tabindex={0}>{@render children?.()}</span>

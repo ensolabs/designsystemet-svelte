@@ -5,6 +5,7 @@
 -->
 <script lang="ts">
   import type { HTMLAttributes } from 'svelte/elements';
+  import { customElementAttributes } from '../utilities/custom-element';
   import type { ChildSnippet, DefaultProps } from '../types';
 
   type Props = DefaultProps & HTMLAttributes<HTMLElement> & { position?: 'start' | 'end'; child?: ChildSnippet; ref?: HTMLElement };
@@ -17,5 +18,5 @@
 {#if child}
   {@render child({ props: attrs })}
 {:else}
-  <ds-field bind:this={ref} {...attrs}>{@render children?.()}</ds-field>
+  <ds-field bind:this={ref} {...customElementAttributes(attrs)}>{@render children?.()}</ds-field>
 {/if}

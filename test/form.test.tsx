@@ -1,4 +1,4 @@
-import { Button, Field, Input, Label, Spinner, Textarea, Textfield, ValidationMessage } from '@digdir/designsystemet-react';
+import { Button, ErrorSummary, Field, Input, Label, Search, Spinner, Textarea, Textfield, ValidationMessage } from '@digdir/designsystemet-react';
 import type { ReactElement } from 'react';
 import type { Snippet } from 'svelte';
 import { expect, test } from 'vitest';
@@ -6,6 +6,14 @@ import { both } from './parity';
 import * as S from './stories/form.svelte';
 
 const stories: Record<Exclude<keyof typeof S, 'default'>, ReactElement> = {
+  // React 19 writes `true` on a custom element as an empty attribute.
+  customElementTrue: (
+    <>
+      <Field data-flag={true}><Label>Navn</Label><Input /></Field>
+      <Search data-flag={true}><Search.Input aria-label="Søk" /></Search>
+      <ErrorSummary data-flag={true}><ErrorSummary.Heading>Feil</ErrorSummary.Heading></ErrorSummary>
+    </>
+  ),
   buttonPrimary: <Button>Lagre</Button>,
   buttonVariants: (
     <>
