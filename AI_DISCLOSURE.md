@@ -9,7 +9,9 @@ scope: |
   direction. One session set up the package, the conventions and both test harnesses, and integrated and checked the
   work; parallel Claude Opus 5.5 agents ported the component groups against the source of
   @digdir/designsystemet-react@1.23.0 (four agents), then wrote the Svelte twins of Digdir's Storybook stories and fixed
-  the components those exposed (four more). The vendored stories in test/upstream/ are Digdir's, unchanged.
+  the components those exposed (four more). A later round of agents ported Combobox and the remaining hooks, added
+  the real-browser tests that run Digdir's play functions, and closed the remaining behaviour differences (four
+  more). The vendored stories in test/upstream/ are Digdir's, unchanged.
   Correctness rests on the parity tests against Digdir's React components, not on line-by-line human review.
 last-updated: 2026-10-29
 ---
