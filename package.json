@@ -1,0 +1,55 @@
+{
+  "name": "@ensolabs/designsystemet-svelte",
+  "version": "1.23.0",
+  "private": true,
+  "description": "Designsystemet (designsystemet.no) for Svelte 5: a port of @digdir/designsystemet-react with the same markup, styled by @digdir/designsystemet-css and driven by @digdir/designsystemet-web.",
+  "license": "MIT",
+  "keywords": [
+    "svelte",
+    "designsystemet",
+    "digdir",
+    "design-system",
+    "web-components"
+  ],
+  "homepage": "https://github.com/ensolabs/designsystemet-svelte#readme",
+  "bugs": "https://github.com/ensolabs/designsystemet-svelte/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ensolabs/designsystemet-svelte.git"
+  },
+  "type": "module",
+  "sideEffects": [
+    "./dist/index.js"
+  ],
+  "svelte": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "svelte": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "imports": {
+    "#combobox-text": {
+      "types": "./dist/combobox/text.browser.d.ts",
+      "browser": "./dist/combobox/text.browser.js",
+      "default": "./dist/combobox/text.server.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "@digdir/designsystemet-css": "1.23.0",
+    "svelte": "^5.29.0"
+  },
+  "dependencies": {
+    "@digdir/designsystemet-web": "1.23.0",
+    "@floating-ui/dom": "1.8.0",
+    "@tanstack/virtual-core": "3.19.8"
+  }
+}
