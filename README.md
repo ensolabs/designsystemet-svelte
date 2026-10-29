@@ -14,7 +14,7 @@ Not on npm yet. Until it is, install it from GitHub, pinned to a commit:
 bun add github:ensolabs/designsystemet-svelte#<commit> @digdir/designsystemet-css@1.23.0
 ```
 
-Until then the package exports its source (`src/index.ts`), which Vite and SvelteKit compile like your own; `bun run build` checks that it also packages for npm. The version follows the upstream version it mirrors: `1.23.0` is a port of `@digdir/designsystemet-react@1.23.0`.
+Until then the package exports its source (`src/index.ts`), which Vite and SvelteKit compile like your own (with TypeScript's `lib` at ES2022 or later, as Digdir's packages need); `bun run build` checks that it also packages for npm. The version follows the upstream version it mirrors: `1.23.0` is a port of `@digdir/designsystemet-react@1.23.0`.
 
 ## Setup
 
