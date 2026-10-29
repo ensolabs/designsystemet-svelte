@@ -1,7 +1,9 @@
 <!--
-  Tabs that switch between panels: Tabs.List with a Tabs.Tab per Tabs.Panel, matched by `value`. Bind `value` to
-  control the selected tab, or give `defaultValue` and let designsystemet-web's `<ds-tabs>` switch them; `onChange`
-  gets the new value either way.
+  Tabs that switch between panels: Tabs.List with a Tabs.Tab per Tabs.Panel, matched by `value`. As in React:
+  - Without `value`, designsystemet-web's `<ds-tabs>` switches them; `defaultValue` picks the first.
+  - With `value`, it is controlled: a click calls `onChange` and the selected tab stays `value` unless the parent
+    changes it.
+  - With `bind:value`, Svelte's controlled form, a click calls `onChange` and then updates the bound `value`.
 -->
 <script lang="ts">
   import { customElementAttributes } from '../utilities/custom-element';
@@ -17,7 +19,17 @@
       ref?: HTMLElement;
     };
 
-  let { value = $bindable(), defaultValue, class: className, onChange, children, ref = $bindable(), ...rest }: Props = $props();
+  let {
+    value = $bindable(),
+    // The parent's `value` itself: after `value = …`, it has the new value only if the parent bound `value`.
+    value: parentValue,
+    defaultValue,
+    class: className,
+    onChange,
+    children,
+    ref = $bindable(),
+    ...rest
+  }: Props = $props();
 
   const valuePrefix = $props.id();
   // svelte-ignore state_referenced_locally
@@ -32,9 +44,15 @@
       return isControlled ? value : uncontrolledValue;
     },
     onChange: (newValue) => {
-      if (isControlled) value = newValue;
-      else uncontrolledValue = newValue;
+      if (!isControlled) {
+        uncontrolledValue = newValue;
+        onChange?.(newValue);
+        return;
+      }
       onChange?.(newValue);
+      value = newValue;
+      // Not bound (or the parent kept its value): stay on `value`, as React does.
+      if (parentValue !== newValue) value = parentValue;
     },
     getPrefixedValue: (value) => value && `${valuePrefix}-${value}`,
   });

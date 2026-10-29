@@ -1,8 +1,4 @@
 {
   "failsForReact": {},
-  "differsByDesign": {
-    "tabs": {
-      "ControlledStop": "React's Tabs with `value` and no `onChange` stays on its tab when another is clicked; ours has a bindable `value`, which it sets on the click, so the clicked tab is selected (README: bindable state instead of controlled props)"
-    }
-  }
+  "differsByDesign": {}
 }
