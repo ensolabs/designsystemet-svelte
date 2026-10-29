@@ -1,6 +1,5 @@
 <!-- Svelte twins of packages/react/src/components/checkbox/checkbox.stories.tsx. The stories built on useCheckboxGroup
-     bind the checkboxes to one array with bind:group, and pass the group's name, disabled, readonly and error to each, as
-     the hook's getCheckboxProps does. -->
+     use the ported hook, with the story's args (the meta's `label: ''` included, as Storybook merges them). -->
 <script module lang="ts">
   import { Checkbox, Fieldset } from '../../../src';
   import Conditional from './checkbox/Conditional.svelte';
@@ -36,7 +35,7 @@
 
 {#snippet AriaLabel()}<Checkbox label="" value="value" aria-label="Checkbox" />{/snippet}
 
-{#snippet Group()}<ContactGroup name="my-group" disabled={false} error="" />{/snippet}
+{#snippet Group()}<ContactGroup args={{ label: '', name: 'my-group', disabled: false, error: '' }} />{/snippet}
 
 {#snippet OneOption()}
   <Fieldset>
@@ -49,14 +48,14 @@
 {/snippet}
 
 {#snippet WithError()}
-  <ContactGroup name="my-error" disabled={false} error="Du må velge minst to kontaktalternativ" />
+  <ContactGroup args={{ label: '', disabled: false, name: 'my-error', error: 'Du må velge minst to kontaktalternativ' }} />
 {/snippet}
 
 {#snippet ControlledStory()}<Controlled />{/snippet}
 
-{#snippet ReadOnly()}<ContactGroup name="my-readonly" readonly />{/snippet}
+{#snippet ReadOnly()}<ContactGroup args={{ label: '', name: 'my-readonly', readonly: true }} />{/snippet}
 
-{#snippet Disabled()}<ContactGroup name="my-disabled" disabled />{/snippet}
+{#snippet Disabled()}<ContactGroup args={{ label: '', name: 'my-disabled', disabled: true }} />{/snippet}
 
 {#snippet InTableStory()}<InTable />{/snippet}
 
@@ -113,4 +112,4 @@
   </Fieldset>
 {/snippet}
 
-{#snippet End()}<ContactGroup position="end" />{/snippet}
+{#snippet End()}<ContactGroup args={{ label: '' }} position="end" />{/snippet}

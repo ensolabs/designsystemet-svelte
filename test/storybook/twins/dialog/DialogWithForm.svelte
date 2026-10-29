@@ -10,8 +10,8 @@
   <Dialog.Trigger>Open Dialog</Dialog.Trigger>
   <Dialog bind:ref={dialog} onClose={() => (input = '')} closedby="any" id="my-dialog">
     <Heading style="margin-bottom: var(--ds-size-2)">Dialog med skjema</Heading>
-    <!-- The native autofocus attribute: Dialog focuses the field when it has opened. -->
-    <Textfield autofocus label="Navn" bind:value={input} />
+    <!-- The native autofocus attribute, written as the story writes it: Dialog focuses the field when it has opened. -->
+    <Textfield autofocus="true" label="Navn" bind:value={input} />
     <div style="display: flex; gap: var(--ds-size-4); margin-top: var(--ds-size-4)">
       <Button
         onclick={() => {

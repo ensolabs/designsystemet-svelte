@@ -1,13 +1,15 @@
-<!-- A Suggestion with `bind:selected`, showing the bound value in an `output` next to it. Empty comes last, as
+<!-- A Suggestion with `bind:selected` (or, with `bind={false}`, `selected` passed as a value), showing the parent's value
+     in an `output` next to it. Empty comes last, as
      designsystemet-web gives it the typed text as its label and the first option with that label is matched. -->
 <script lang="ts">
   import { EXPERIMENTAL_Suggestion as Suggestion } from '../../../src/suggestion';
 
   // Loosely typed: the tests pass single and multiple props alike.
-  type Props = { selected?: any; options?: { label: string; value: string }[]; [prop: string]: any };
+  type Props = { selected?: any; bind?: boolean; options?: { label: string; value: string }[]; [prop: string]: any };
 
   let {
     selected = $bindable(),
+    bind = true,
     options = [
       { label: 'Oslo', value: '0301' },
       { label: 'Bergen', value: '4601' },
@@ -18,7 +20,7 @@
 </script>
 
 <div class="story">
-  <Suggestion bind:selected {...rest}>
+  {#snippet content()}
     <Suggestion.Input aria-label="Kommune" />
     <Suggestion.Clear />
     <Suggestion.List>
@@ -27,6 +29,11 @@
       {/each}
       <Suggestion.Empty>Ingen treff</Suggestion.Empty>
     </Suggestion.List>
-  </Suggestion>
+  {/snippet}
+  {#if bind}
+    <Suggestion bind:selected {...rest}>{@render content()}</Suggestion>
+  {:else}
+    <Suggestion {selected} {...rest}>{@render content()}</Suggestion>
+  {/if}
 </div>
 <output>{JSON.stringify(selected ?? null)}</output>

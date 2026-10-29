@@ -1,9 +1,8 @@
-<!-- The pizza radio group of useRadioGroup's Preview and Controlled, bound to one value with bind:group. -->
+<!-- The Preview story: the pizza radio group from useRadioGroup. -->
 <script lang="ts">
-  import { Fieldset, Radio } from '../../../../src';
+  import { Fieldset, Radio, useRadioGroup } from '../../../../src';
 
-  let { value = $bindable('') }: { value?: string } = $props();
-  const name = $props.id();
+  const { getRadioProps } = useRadioGroup({});
 </script>
 
 <Fieldset>
@@ -11,14 +10,8 @@
   <Fieldset.Description>
     Alle pizzaene er laget på våre egne nybakte bunner og serveres med kokkens egen osteblanding og tomatsaus.
   </Fieldset.Description>
-  <Radio label="Bare ost" {name} value="ost" bind:group={value} />
-  <Radio
-    label="Dobbeldekker"
-    description="Chorizo spesial med kokkens luksuskylling"
-    {name}
-    value="dobbeldekker"
-    bind:group={value}
-  />
-  <Radio label="Flammen" {name} value="flammen" bind:group={value} />
-  <Radio label="Snadder" {name} value="snadder" bind:group={value} />
+  <Radio label="Bare ost" {...getRadioProps('ost')} />
+  <Radio label="Dobbeldekker" description="Chorizo spesial med kokkens luksuskylling" {...getRadioProps('dobbeldekker')} />
+  <Radio label="Flammen" {...getRadioProps('flammen')} />
+  <Radio label="Snadder" {...getRadioProps('snadder')} />
 </Fieldset>

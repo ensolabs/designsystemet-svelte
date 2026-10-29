@@ -135,7 +135,7 @@
 {/snippet}
 
 {#snippet suggestionSelected()}
-  <EXPERIMENTAL_Suggestion selected={{ label: 'Bergen', value: '4601' }} name="kommune" id="kommune">
+  <EXPERIMENTAL_Suggestion defaultSelected={{ label: 'Bergen', value: '4601' }} name="kommune" id="kommune">
     <EXPERIMENTAL_Suggestion.Input aria-label="Kommune" />
     <EXPERIMENTAL_Suggestion.List>
       <EXPERIMENTAL_Suggestion.Option value="0301">Oslo</EXPERIMENTAL_Suggestion.Option>
@@ -152,7 +152,7 @@
 {/snippet}
 
 {#snippet suggestionMultiple()}
-  <EXPERIMENTAL_Suggestion multiple selected={['Oslo', { label: 'Bergen', value: '4601' }]} name="kommuner" class="extra" data-size="sm">
+  <EXPERIMENTAL_Suggestion multiple defaultSelected={['Oslo', { label: 'Bergen', value: '4601' }]} name="kommuner" class="extra" data-size="sm">
     {#snippet renderSelected({ label, value })}<b data-value={value}>{label}</b>{/snippet}
     <EXPERIMENTAL_Suggestion.Input aria-label="Kommuner" />
     <EXPERIMENTAL_Suggestion.Toggle />
@@ -192,7 +192,7 @@
     <EXPERIMENTAL_Suggestion.Input aria-label="Uten filter" />
     <EXPERIMENTAL_Suggestion.List><EXPERIMENTAL_Suggestion.Option>Oslo</EXPERIMENTAL_Suggestion.Option></EXPERIMENTAL_Suggestion.List>
   </EXPERIMENTAL_Suggestion>
-  <EXPERIMENTAL_Suggestion selected="Oslo" filter={({ index }) => index > 0}>
+  <EXPERIMENTAL_Suggestion defaultSelected="Oslo" filter={({ index }) => index > 0}>
     <EXPERIMENTAL_Suggestion.Input aria-label="Med filter" />
     <EXPERIMENTAL_Suggestion.List>
       <EXPERIMENTAL_Suggestion.Option>Oslo</EXPERIMENTAL_Suggestion.Option>

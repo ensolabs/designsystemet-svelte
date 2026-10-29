@@ -1,39 +1,24 @@
-<!-- AllowIndeterminate: two rows with a checkbox each, bound to one array, and a "select all" checkbox in the header
-     that is checked when both are and indeterminate when one is. -->
+<!-- AllowIndeterminate: two rows with a checkbox each, and a "select all" checkbox in the header (allowIndeterminate),
+     all from useCheckboxGroup. -->
 <script lang="ts">
-  import { Checkbox, Table } from '../../../../src';
+  import { Checkbox, Table, useCheckboxGroup } from '../../../../src';
 
-  const rows = ['1', '2'];
-  let value = $state<string[]>([]);
-  const all = $derived(rows.every((row) => value.includes(row)));
-  const some = $derived(rows.some((row) => value.includes(row)));
-  // A checkbox's indeterminate state is a property, not an attribute: set it on the element, as useCheckboxGroup does.
-  let selectAll = $state<HTMLInputElement>();
-  $effect(() => {
-    if (selectAll) selectAll.indeterminate = some && !all;
-  });
+  const { getCheckboxProps } = useCheckboxGroup({ name: 'my-checkbox' });
 </script>
 
 <Table>
   <Table.Head>
     <Table.Row>
       <Table.HeaderCell>
-        <Checkbox
-          aria-label="Select all"
-          name="my-checkbox"
-          value="all"
-          checked={all}
-          bind:ref={selectAll}
-          onchange={() => (value = all ? [] : rows)}
-        />
+        <Checkbox aria-label="Select all" {...getCheckboxProps({ allowIndeterminate: true, value: 'all' })} />
       </Table.HeaderCell>
       <Table.HeaderCell>Header</Table.HeaderCell>
     </Table.Row>
   </Table.Head>
   <Table.Body>
-    {#each rows as row (row)}
+    {#each [1, 2] as row (row)}
       <Table.Row>
-        <Table.Cell><Checkbox aria-label="Check {row}" name="my-checkbox" value={row} bind:group={value} /></Table.Cell>
+        <Table.Cell><Checkbox aria-label="Check {row}" {...getCheckboxProps(`${row}`)} /></Table.Cell>
         <Table.Cell>Content</Table.Cell>
       </Table.Row>
     {/each}

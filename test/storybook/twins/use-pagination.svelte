@@ -5,4 +5,4 @@
   export { Preview };
 </script>
 
-{#snippet Preview()}<PaginationPreview currentPage={2} totalPages={10} showPages={7} />{/snippet}
+{#snippet Preview()}<PaginationPreview args={{ currentPage: 2, totalPages: 10, showPages: 7 }} />{/snippet}

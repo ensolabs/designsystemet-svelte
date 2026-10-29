@@ -1,24 +1,29 @@
-<!-- InTableWithPagination: three rows a page, a checkbox per row bound to one array, a "select all" checkbox for the
-     rows on the page, and a Pagination driven by pagination(). -->
+<!-- InTableWithPagination: three rows a page, a checkbox per row and a "select all" checkbox from useCheckboxGroup, and
+     a Pagination from usePagination. -->
 <script lang="ts">
-  import { Checkbox, Pagination, Table, pagination } from '../../../../src';
+  import { Checkbox, Pagination, Table, useCheckboxGroup, usePagination } from '../../../../src';
   import { tableData } from './people';
 
   const itemsPerPage = 3;
-  const name = $props.id();
   let currentPage = $state(1);
-  let value = $state<string[]>([]);
+
+  const { getCheckboxProps } = useCheckboxGroup({ label: '' } as Parameters<typeof useCheckboxGroup>[0]);
 
   const totalPages = Math.ceil(tableData.length / itemsPerPage);
-  const p = $derived(pagination({ currentPage, setCurrentPage: (page) => (currentPage = page), totalPages, showPages: totalPages }));
-  const currentData = $derived(tableData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage));
-  const ids = $derived(currentData.map((user) => `${user.id}`));
-  const all = $derived(ids.every((v) => value.includes(v)));
-  const some = $derived(ids.some((v) => value.includes(v)));
-  // A checkbox's indeterminate state is a property, not an attribute: set it on the element, as useCheckboxGroup does.
-  let selectAll = $state<HTMLInputElement>();
-  $effect(() => {
-    if (selectAll) selectAll.indeterminate = some && !all;
+
+  const pagination = usePagination({
+    get currentPage() {
+      return currentPage;
+    },
+    setCurrentPage: (page) => (currentPage = page),
+    totalPages,
+    showPages: totalPages,
+  });
+
+  // Compute the slice of users to display on the current page
+  const currentData = $derived.by(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return tableData.slice(startIndex, startIndex + itemsPerPage);
   });
 </script>
 
@@ -27,15 +32,7 @@
     <Table.Head>
       <Table.Row>
         <Table.HeaderCell>
-          <Checkbox
-            aria-label="Select all"
-            {name}
-            value="all"
-           
-            checked={all}
-            bind:ref={selectAll}
-            onchange={() => (value = all ? value.filter((v) => !ids.includes(v)) : [...new Set([...value, ...ids])])}
-          />
+          <Checkbox aria-label="Select all" {...getCheckboxProps({ allowIndeterminate: true, value: 'all' })} />
         </Table.HeaderCell>
         <Table.HeaderCell>Navn</Table.HeaderCell>
         <Table.HeaderCell>Epost</Table.HeaderCell>
@@ -46,7 +43,7 @@
       {#each currentData as user (user.id)}
         <Table.Row>
           <Table.Cell>
-            <Checkbox aria-label="Check {user.id}" {name} value={`${user.id}`} bind:group={value} />
+            <Checkbox aria-label={'Check ' + user.id} {...getCheckboxProps({ value: user.id.toString() })} />
           </Table.Cell>
           <Table.Cell>{user.navn}</Table.Cell>
           <Table.Cell>{user.epost}</Table.Cell>
@@ -57,15 +54,15 @@
   </Table>
   <Pagination>
     <Pagination.List>
-      <Pagination.Item><Pagination.Button {...p.prevButtonProps}>Forrige</Pagination.Button></Pagination.Item>
-      {#each p.pages as { itemKey, buttonProps, page } (itemKey)}
+      <Pagination.Item><Pagination.Button {...pagination.prevButtonProps}>Forrige</Pagination.Button></Pagination.Item>
+      {#each pagination.pages as { itemKey, buttonProps, page } (itemKey)}
         <Pagination.Item>
           {#if typeof page === 'number'}
-            <Pagination.Button {...buttonProps} aria-label="Side {page}">{page}</Pagination.Button>
+            <Pagination.Button {...buttonProps} aria-label={`Side ${page}`}>{page}</Pagination.Button>
           {/if}
         </Pagination.Item>
       {/each}
-      <Pagination.Item><Pagination.Button {...p.nextButtonProps}>Neste</Pagination.Button></Pagination.Item>
+      <Pagination.Item><Pagination.Button {...pagination.nextButtonProps}>Neste</Pagination.Button></Pagination.Item>
     </Pagination.List>
   </Pagination>
 </div>

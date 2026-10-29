@@ -20,10 +20,11 @@ const ID_ATTRIBUTES = new Set([
 
 /**
  * An id from React's useId (`_r_5_`, `:r5:`, `«r5»` in the browser; `_R_0_` and so on from react-dom/server) or
- * Svelte's $props.id (`c6` in the browser, `s6` on the server), as the whole value or after a dash:
+ * Svelte's $props.id (`c6` in the browser, `s6` on the server), or the ported hooks' useId (`ds6`, as $props.id can't be
+ * called from a hook: src/utilities/use-id.ts), as the whole value or after a dash:
  * `togglegroup-name-_r_5_`. Literal names are compared as they are.
  */
-const GENERATED_ID_SUFFIX = /(?<=^|-)(?:_[rR]_[0-9a-zA-Z]+_|:[rR][0-9a-zA-Z]+:|«[rR][0-9a-zA-Z]+»|[cs]\d+)$/;
+const GENERATED_ID_SUFFIX = /(?<=^|-)(?:_[rR]_[0-9a-zA-Z]+_|:[rR][0-9a-zA-Z]+:|«[rR][0-9a-zA-Z]+»|[cs]\d+|ds\d+)$/;
 
 // Node.TEXT_NODE and Node.ELEMENT_NODE, without a DOM global: the ssr tests parse HTML with jsdom in Node.
 const TEXT_NODE = 3;

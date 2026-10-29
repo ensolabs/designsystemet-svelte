@@ -21,11 +21,17 @@
 
   let { singular, plural, class: className, id: _id, autoPlacement: _autoPlacement = true, children, ref = $bindable(), ...rest }: Props = $props();
 
-  const { handleFilter } = getSuggestionContext();
+  const { handleFilter, render } = getSuggestionContext();
 
-  // React filters after every render of the list; here, when it mounts, when `filter` changes and when its options do.
+  // React filters after every render of the list. A render follows a change of the list's props, of the Suggestion's
+  // (a new context value), of what the filter function reads, or of the options (rendered by the same parent): here,
+  // this effect runs again on the first three, and the observer on the options.
   $effect(() => {
+    render();
+    void [singular, plural, className, _id, _autoPlacement, children, ...Object.values(rest)];
     handleFilter();
+  });
+  $effect(() => {
     if (!ref) return;
     const observer = new MutationObserver(() => handleFilter());
     observer.observe(ref, { childList: true, subtree: true, characterData: true });

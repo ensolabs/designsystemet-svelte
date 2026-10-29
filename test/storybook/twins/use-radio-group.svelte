@@ -1,6 +1,5 @@
-<!-- Svelte twins of packages/react/src/utilities/hooks/use-radio-group/use-radio-group.stories.tsx. Svelte has no
-     useRadioGroup: the radios bind to one value with bind:group and share a name, which is what the hook's
-     getRadioProps does. -->
+<!-- Svelte twins of packages/react/src/utilities/hooks/use-radio-group/use-radio-group.stories.tsx, with the ported
+     useRadioGroup. -->
 <script module lang="ts">
   import Conditional from './use-radio-group/Conditional.svelte';
   import Controlled from './use-radio-group/Controlled.svelte';

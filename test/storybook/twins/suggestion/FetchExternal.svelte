@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Field, Label, Spinner, EXPERIMENTAL_Suggestion as Suggestion } from '../../../../src';
+  import { Field, Label, Spinner, EXPERIMENTAL_Suggestion as Suggestion, useDebounceCallback } from '../../../../src';
 
   let value = $state('');
   let options = $state<string[] | null>(null);
@@ -10,13 +10,7 @@
     options = Array.isArray(countries) ? countries.map(({ name }) => name) : [];
   };
 
-  // useDebounceCallback(apiCall, 500)
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const debounced = (value: string) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => apiCall(value), 500);
-  };
-  $effect(() => () => clearTimeout(timer));
+  const debounced = useDebounceCallback(apiCall, 500);
 
   const handleInput = (event: Event & { currentTarget: HTMLInputElement }) => {
     const encoded = encodeURIComponent(event.currentTarget.value.trim());

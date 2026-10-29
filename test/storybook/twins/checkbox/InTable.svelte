@@ -1,19 +1,12 @@
-<!-- InTable: a checkbox per row, bound to one array, and a "select all" checkbox in the header that is checked when
-     every row is and indeterminate when some are. -->
+<!-- InTable: a checkbox per row from useCheckboxGroup, and a "select all" checkbox in the header
+     (allowIndeterminate) that is checked when every row is and indeterminate when some are. -->
 <script lang="ts">
-  import { Checkbox, Table } from '../../../../src';
+  import { Checkbox, Table, useCheckboxGroup } from '../../../../src';
   import { tableData } from './people';
 
-  const id = $props.id();
-  const ids = tableData.map((person) => `${person.id}`);
-  let value = $state(['2', '3']);
-  const all = $derived(ids.every((v) => value.includes(v)));
-  const some = $derived(ids.some((v) => value.includes(v)));
-  // A checkbox's indeterminate state is a property, not an attribute: set it on the element, as useCheckboxGroup does.
-  let selectAll = $state<HTMLInputElement>();
-  $effect(() => {
-    if (selectAll) selectAll.indeterminate = some && !all;
-  });
+  // Storybook's context.id, which the story runtime leaves out.
+  const id = undefined;
+  const { getCheckboxProps } = useCheckboxGroup({ name: id, value: ['2', '3'], label: '' } as Parameters<typeof useCheckboxGroup>[0]);
 </script>
 
 <Table>
@@ -26,15 +19,7 @@
   <Table.Head>
     <Table.Row>
       <Table.HeaderCell>
-        <Checkbox
-          aria-label="Velg alle"
-          name={id}
-          value="all"
-         
-          checked={all}
-          bind:ref={selectAll}
-          onchange={() => (value = all ? [] : ids)}
-        />
+        <Checkbox aria-label="Velg alle" {...getCheckboxProps({ allowIndeterminate: true, value: 'all' })} />
       </Table.HeaderCell>
       <Table.HeaderCell>Navn</Table.HeaderCell>
       <Table.HeaderCell>E-post</Table.HeaderCell>
@@ -44,13 +29,7 @@
     {#each tableData as person (person.id)}
       <Table.Row>
         <Table.Cell>
-          <Checkbox
-            aria-labelledby="{id}-{person.id}-name"
-            name={id}
-            value={`${person.id}`}
-            bind:group={value}
-           
-          />
+          <Checkbox aria-labelledby="{id}-{person.id}-name" {...getCheckboxProps(person.id.toString())} />
         </Table.Cell>
         <Table.Cell id="{id}-{person.id}-name">{person.navn}</Table.Cell>
         <Table.Cell>{person.epost}</Table.Cell>
