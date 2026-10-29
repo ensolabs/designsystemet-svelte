@@ -8,13 +8,13 @@
 
 ## Status
 
-Not on npm yet. Until it is, install it from GitHub, pinned to a commit:
+Not on npm yet. Until it is, install the compiled package from the `dist` branch, pinned to a commit:
 
 ```sh
-bun add github:ensolabs/designsystemet-svelte#<commit> @digdir/designsystemet-css@1.23.0
+bun add github:ensolabs/designsystemet-svelte#<commit on dist> @digdir/designsystemet-css@1.23.0
 ```
 
-Until then the package exports its source (`src/index.ts`), which Vite and SvelteKit compile like your own (with TypeScript's `lib` at ES2022 or later, as Digdir's packages need); `bun run build` checks that it also packages for npm. The version follows the upstream version it mirrors: `1.23.0` is a port of `@digdir/designsystemet-react@1.23.0`.
+CI builds `dist` from `main` after every check passes (`bun run package` writes the same folder that npm will get). Each `dist` commit says which `main` commit it was built from. The version follows the upstream version it mirrors: `1.23.0` is a port of `@digdir/designsystemet-react@1.23.0`.
 
 ## Setup
 
@@ -113,6 +113,7 @@ bun run test          # parity with @digdir/designsystemet-react (jsdom, server,
 bun run test:browser  # the Chrome tests only
 bun run check:version
 bun run build         # svelte-package → dist/
+bun run package       # dist/ plus a package.json for it → package/, as installed
 ```
 
 The Chrome tests run headless through WebdriverIO, which uses an installed Chrome (or downloads Chrome for Testing) and fetches a matching chromedriver. To use a particular Chrome, set `CHROME_BIN` to its executable.

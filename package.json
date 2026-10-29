@@ -46,7 +46,8 @@
     "test": "vitest run",
     "test:browser": "vitest run --project browser",
     "check:version": "bun scripts/check-version.ts",
-    "vendor:stories": "bun scripts/vendor-stories.ts"
+    "vendor:stories": "bun scripts/vendor-stories.ts",
+    "package": "bun run build && bun scripts/package-dist.ts"
   },
   "publishConfig": {
     "access": "public"
