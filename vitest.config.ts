@@ -48,6 +48,8 @@ export default defineConfig({
           include: ['test/**/*.test.{ts,tsx}'],
           exclude: [...configDefaults.exclude, 'test/**/*.{ssr,browser}.test.{ts,tsx}', 'test/upstream/**'],
           setupFiles: ['test/setup.ts'],
+          // jsdom is slow with Combobox's ThousandsOfOptions story: about 3 s here, over 5 s on GitHub's runners.
+          testTimeout: 30_000,
         },
       },
       {
