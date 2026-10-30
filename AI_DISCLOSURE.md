@@ -13,7 +13,7 @@ scope: |
   the real-browser tests that run Digdir's play functions, and closed the remaining behaviour differences (four
   more). The vendored stories in test/upstream/ are Digdir's, unchanged.
   Correctness rests on the parity tests against Digdir's React components, not on line-by-line human review.
-last-updated: 2026-10-29
+last-updated: 2026-10-30
 ---
 
 # AI Disclosure
