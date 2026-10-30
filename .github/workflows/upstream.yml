@@ -1,0 +1,60 @@
+name: Upstream
+
+# Every day, checks npm for a Designsystemet release newer than the one this package matches, and opens an issue for
+# it (one per release; issues for older releases are closed as superseded).
+#
+# The `check` job's outputs (`outdated`, `current`, `latest`) are meant to start the upgrade itself later: a job with
+# `needs: check` and `if: needs.check.outputs.outdated == 'true'` can follow CONTRIBUTING.md's upgrade steps.
+
+on:
+  schedule:
+    - cron: '17 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      outdated: ${{ steps.npm.outputs.outdated }}
+      current: ${{ steps.npm.outputs.current }}
+      latest: ${{ steps.npm.outputs.latest }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Check npm
+        id: npm
+        run: bun scripts/check-upstream.ts
+
+      - name: Open an issue
+        if: steps.npm.outputs.outdated == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CURRENT: ${{ steps.npm.outputs.current }}
+          LATEST: ${{ steps.npm.outputs.latest }}
+          REPO: ${{ github.server_url }}/${{ github.repository }}
+        run: |
+          title="Designsystemet $LATEST"
+          gh label create upstream --color 1d76db --description 'A new Designsystemet release to port' 2>/dev/null || true
+          existing=$(gh issue list --label upstream --state all --search "\"$title\" in:title" --json number,title --jq ".[] | select(.title == \"$title\") | .number")
+          if [ -n "$existing" ]; then echo "Issue #$existing is already there."; exit 0; fi
+          url=$(gh issue create --label upstream --title "$title" --body "Digdir has released Designsystemet $LATEST. This package matches $CURRENT.
+
+          - Release notes: https://github.com/digdir/designsystemet/releases/tag/v$LATEST
+          - React changes: https://github.com/digdir/designsystemet/compare/v$CURRENT...v$LATEST (see \`packages/react/src\`)
+
+          Upgrade as described in [CONTRIBUTING.md]($REPO/blob/main/CONTRIBUTING.md#upgrading-to-a-new-designsystemet-release).
+
+          _Opened by the Upstream workflow._")
+          echo "Opened $url"
+          for n in $(gh issue list --label upstream --state open --json number,title --jq ".[] | select(.title != \"$title\") | .number"); do
+            gh issue close "$n" --comment "Superseded by $url."
+          done

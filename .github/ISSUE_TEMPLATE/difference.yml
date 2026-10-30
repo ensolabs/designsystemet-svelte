@@ -1,0 +1,31 @@
+name: Differs from Digdir
+description: A component renders or behaves differently from Digdir's React component.
+labels: [difference]
+body:
+  - type: input
+    id: component
+    attributes:
+      label: Component
+      placeholder: Tabs, Suggestion, useCheckboxGroup, …
+    validations:
+      required: true
+  - type: textarea
+    id: svelte
+    attributes:
+      label: What you did, in Svelte
+      description: The smallest code that shows it, and what happened.
+      render: svelte
+    validations:
+      required: true
+  - type: textarea
+    id: digdir
+    attributes:
+      label: What Digdir's React component does
+      description: The same in React, or a link to the story on storybook.designsystemet.no, and the HTML or behaviour you expected.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The dist commit you installed, and the version of @digdir/designsystemet-css.
