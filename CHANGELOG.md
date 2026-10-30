@@ -1,6 +1,6 @@
 # Changelog
 
-Versions follow Designsystemet: version `x.y.z` of this package matches Digdir's `x.y.z`. Until the package is on npm, it is installed from a commit on the `dist` branch, so changes are listed under the Designsystemet version they belong to.
+Versions follow Designsystemet: version `x.y.z` of this package matches Digdir's `x.y.z`. A fix to the port alone gets no version of its own; it replaces the build of the version it fixes, and is listed here under that version.
 
 ## 1.23.0 (not yet on npm)
 

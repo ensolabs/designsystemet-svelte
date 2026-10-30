@@ -94,7 +94,7 @@ Digdir's own oddities are kept, so the HTML matches: for example, Breadcrumbs an
 
 ## Versions
 
-The version is the Designsystemet release this package matches: `1.23.0` matches Digdir's `1.23.0`. Use Digdir's CSS (and any other `@digdir/*` package) at the same version. A workflow checks npm every day for a newer Designsystemet release and opens an issue when there is one.
+The version is the Designsystemet release this package matches: `1.23.0` matches Digdir's `1.23.0`. Use Digdir's CSS (and any other `@digdir/*` package) at the same version. Fixes to the port itself keep the version: they replace the build, so you get them by updating to the newest build of your version. A workflow checks npm every day for a newer Designsystemet release and opens an issue when there is one.
 
 ## How we know it matches
 
@@ -109,7 +109,7 @@ At 1.23.0: all 295 of Digdir's stories match, in all four ways. The one exceptio
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md): how the code is laid out, how to port a component, how the tests work, and how to upgrade to a new Designsystemet release. Changes are listed in [CHANGELOG.md](CHANGELOG.md).
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [code of conduct](CODE_OF_CONDUCT.md). CONTRIBUTING covers how the code is laid out, how to port a component, how the tests work, and how to upgrade to a new Designsystemet release. Changes are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

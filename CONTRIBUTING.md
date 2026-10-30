@@ -70,11 +70,16 @@ The `Upstream` workflow checks npm daily and opens an issue when Digdir has rele
 
 The upgrade is one pull request, titled `Designsystemet <version>`.
 
+## Versions
+
+The version is Digdir's: `1.23.0` matches Designsystemet 1.23.0, so a user can choose which Designsystemet release they run. A fix to the port alone doesn't get a version of its own, because it isn't optional: it replaces the build of the version it fixes. Until the package is on npm, that means a new commit on `dist`; list the fix in the CHANGELOG under that version.
+
 ## Pull requests
 
 - One change per pull request, with tests; CI must pass.
 - Describe what you compared against: the Digdir file or story.
 - Don't change `test/upstream/` by hand, or loosen `test/canonical.ts`, to make a test pass.
+- By taking part you agree to the [code of conduct](CODE_OF_CONDUCT.md).
 - AI-assisted contributions are welcome. Say so in the pull request, and update `AI_DISCLOSURE.md` if the models or the scope change.
 
 ## Reporting problems
