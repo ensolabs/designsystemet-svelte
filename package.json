@@ -1,7 +1,6 @@
 {
   "name": "@ensolabs/designsystemet-svelte",
   "version": "1.23.0",
-  "private": true,
   "description": "Designsystemet (designsystemet.no) for Svelte 5: a port of @digdir/designsystemet-react with the same markup, styled by @digdir/designsystemet-css and driven by @digdir/designsystemet-web.",
   "license": "MIT",
   "keywords": [
