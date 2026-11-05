@@ -16,7 +16,7 @@ bun run build          # svelte-package → dist/
 bun run package        # dist/ and its package.json → package/, as installed
 ```
 
-CI runs `typecheck`, `test`, `build` and `check:version` on every push and pull request. On `main`, it then commits `package/` to the `dist` branch, which is what apps install until the package is on npm.
+CI runs `typecheck`, `test`, `build` and `check:version` on every push and pull request. On `main`, it then commits `package/` to the `dist` branch, for installing unreleased builds. Releases go to npm (see [Releasing](#releasing)).
 
 ## How the code is laid out
 
@@ -72,7 +72,15 @@ The upgrade is one pull request, titled `Designsystemet <version>`.
 
 ## Versions
 
-The version is Digdir's: `1.23.0` matches Designsystemet 1.23.0, so a user can choose which Designsystemet release they run. A fix to the port alone doesn't get a version of its own, because it isn't optional: it replaces the build of the version it fixes. Until the package is on npm, that means a new commit on `dist`; list the fix in the CHANGELOG under that version.
+The version is Digdir's: `1.23.0` matches Designsystemet 1.23.0, so a user can choose which Designsystemet release they run. npm versions can't be replaced, so a fix to the port alone is released as `x.y.z-fix.N`: `1.23.0-fix.1` is the first fix to the port of 1.23.0. `check:version` accepts the suffix, and still requires every `@digdir/*` package at `x.y.z`. List the fix in the CHANGELOG under its version. The next Designsystemet release drops the suffix again.
+
+(A `-fix.N` version sorts before `x.y.z` in semver. That's harmless here, because everything is pinned exactly and the release becomes npm's `latest`, but it's why we don't use plain patch numbers: Digdir uses those.)
+
+## Releasing
+
+Publishing a GitHub Release with the tag `v<version>` (as in `package.json`) runs the Release workflow: it runs every check, packages the build and publishes `package/` to npm with provenance, through npm's trusted publishing (no token). A release marked as a pre-release is published under the `next` tag instead of `latest`.
+
+npm has to know the workflow first: in the package's settings on npmjs.com, under *Trusted publishing*, add GitHub Actions with the repository `ensolabs/designsystemet-svelte` and the workflow `release.yml`. The very first version has to be published by hand by a member of the `@ensolabs` npm organisation, because the setting only exists once the package does: `bun install && bun run package && npm publish ./package --access public`.
 
 ## Pull requests
 

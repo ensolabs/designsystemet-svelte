@@ -12,13 +12,15 @@ It is a port in the same spirit as Christian Ekrem's [Elm port](https://github.c
 
 ## Install
 
-Not on npm yet. Until it is, install the compiled package from this repository's `dist` branch, pinned to a commit, together with Digdir's CSS at the same version:
+Install it together with Digdir's CSS at the same version:
 
 ```sh
-bun add github:ensolabs/designsystemet-svelte#<commit on dist> @digdir/designsystemet-css@1.23.0
+bun add @ensolabs/designsystemet-svelte@1.23.0 @digdir/designsystemet-css@1.23.0
 ```
 
-Every commit on `dist` is a build of `main` that passed all checks, and its message names that `main` commit. Svelte 5.29 or later is required.
+Svelte 5.29 or later is required.
+
+Each build of `main` that passes all checks is also committed to the `dist` branch, so you can install an unreleased build with `bun add github:ensolabs/designsystemet-svelte#<commit on dist>`. Installs pinned to a `dist` commit from before the npm release keep working.
 
 ## Set up
 
@@ -94,7 +96,7 @@ Digdir's own oddities are kept, so the HTML matches: for example, Breadcrumbs an
 
 ## Versions
 
-The version is the Designsystemet release this package matches: `1.23.0` matches Digdir's `1.23.0`. Use Digdir's CSS (and any other `@digdir/*` package) at the same version. Fixes to the port itself keep the version: they replace the build, so you get them by updating to the newest build of your version. A workflow checks npm every day for a newer Designsystemet release and opens an issue when there is one.
+The version is the Designsystemet release this package matches: `1.23.0` matches Digdir's `1.23.0`. Use Digdir's CSS (and any other `@digdir/*` package) at the same version. A fix to the port alone is released as `1.23.0-fix.1`, `1.23.0-fix.2` and so on, still for Designsystemet 1.23.0, and becomes `latest` on npm. Note that semver ranges such as `^1.23.0` don't pick these up: install the version you want exactly. A workflow checks npm every day for a newer Designsystemet release and opens an issue when there is one.
 
 ## How we know it matches
 
