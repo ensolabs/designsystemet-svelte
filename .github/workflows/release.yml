@@ -1,0 +1,63 @@
+name: Release
+
+# Publishing a GitHub Release with the tag v<version> publishes that version to npm, with provenance, through npm's
+# trusted publishing (no token; set up in the package's settings on npmjs.com). See CONTRIBUTING.md#releasing.
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm 11.5.1 or later.
+      - name: Update npm
+        run: npm install -g npm@latest
+
+      - name: Check the tag matches package.json
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
+            echo "::error::The tag $GITHUB_REF_NAME doesn't match package.json's version (expected v$version)."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check
+        run: |
+          bun run check:version
+          bun run typecheck
+          bun run test
+
+      - name: Package
+        run: bun run package
+
+      - name: Publish
+        run: npm publish ./package --access public --tag "$DIST_TAG"
+        env:
+          # A release marked as a pre-release goes out as `next`, so plain installs keep getting the latest release.
+          DIST_TAG: ${{ github.event.release.prerelease && 'next' || 'latest' }}

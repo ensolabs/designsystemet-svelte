@@ -1,6 +1,6 @@
 // Writes the package as installed, to package/: the compiled dist/ (run `bun run build` first), the README, LICENSE and
-// AI_DISCLOSURE.md, and a package.json whose entry points name dist/ instead of src/. CI commits it to the `dist`
-// branch, which is what to install from GitHub until the package is on npm; npm will get the same folder.
+// AI_DISCLOSURE.md, and a package.json whose entry points name dist/ instead of src/. The Release workflow publishes
+// this folder to npm; CI also commits it to the `dist` branch, so installs pinned to a commit there keep working.
 import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import pkg from '../package.json';
 
